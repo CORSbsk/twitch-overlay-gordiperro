@@ -164,12 +164,20 @@ const configUI = {
     },
     
     setupKeyboardListener() {
+        let isProcessing = false;
+        
         document.addEventListener('keydown', (e) => {
             // Shift+C para mostrar/ocultar configuración
-            if (e.shiftKey && e.key === 'C') {
+            if (e.shiftKey && e.key === 'C' && !isProcessing) {
                 e.preventDefault();
+                isProcessing = true;
                 console.log('Shift+C detectado');
                 this.toggle();
+                
+                // Evitar múltiples disparos rápidos
+                setTimeout(() => {
+                    isProcessing = false;
+                }, 300);
             }
         });
     },
