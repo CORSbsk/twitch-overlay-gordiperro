@@ -196,8 +196,6 @@ body {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-    border-radius: 14px;
     transition: transform 0.4s ease, opacity 0.4s ease;
     will-change: transform, opacity;
 }
