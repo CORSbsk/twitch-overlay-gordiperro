@@ -44,9 +44,6 @@ const alertManager = {
         this.gordiperroCount = storage.incrementCount();
         console.log(`Nuevo contador de gordiperros: ${this.gordiperroCount}`);
         
-        // Actualizar UI de configuración
-        configUI.updateUIDisplay();
-        
         // Iniciar animación
         this.triggerAnimation();
     },

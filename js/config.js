@@ -50,7 +50,6 @@ const configUI = {
             <input type="number" id="gordiperro-count" min="0" value="0">
             
             <button id="btn-save">Guardar Configuración</button>
-            <button id="btn-test">🧪 Test Alerta</button>
             <button id="btn-close">Cerrar</button>
             
             <div class="info">
@@ -60,13 +59,11 @@ const configUI = {
                 <p>3. Revisa la consola del navegador (F12) para ver el UUID</p>
                 <p>4. Copia el UUID y pégalo aquí</p>
                 <p>5. Puedes ajustar manualmente el contador si es necesario</p>
-                <p><strong>O usa "Test Alerta" para probar sin Twitch</strong></p>
             </div>
         `;
         
         // Agregar event listeners a los botones
         const btnSave = document.getElementById('btn-save');
-        const btnTest = document.getElementById('btn-test');
         const btnClose = document.getElementById('btn-close');
         
         if (btnSave) {
@@ -74,13 +71,6 @@ const configUI = {
             console.log('Event listener agregado a btn-save');
         } else {
             console.error('btn-save no encontrado');
-        }
-        
-        if (btnTest) {
-            btnTest.addEventListener('click', () => this.triggerTestAlert());
-            console.log('Event listener agregado a btn-test');
-        } else {
-            console.error('btn-test no encontrado');
         }
         
         if (btnClose) {
@@ -211,42 +201,10 @@ const configUI = {
         return config;
     },
     
-    triggerTestAlert() {
-        console.log('=== TEST ALERT TRIGGERED ===');
-        
-        // Simular una redención sin pasar por Twitch
-        const testData = {
-            userName: 'TesterUser',
-            rewardTitle: 'Gordiperro Acumulador',
-            rewardId: config.rewardId || 'test-reward-id',
-            redemptionId: 'test-' + Date.now()
-        };
-        
-        console.log('Datos de test:', testData);
-        
-        // Llamar al alert manager directamente
-        if (typeof alertManager !== 'undefined' && alertManager) {
-            alertManager.handleRewardRedemption(testData);
-            console.log('✓ Alerta de test disparada correctamente');
-        } else {
-            console.error('❌ alertManager no disponible');
-        }
-    },
-    
     updateCount(newCount) {
         config.gordiperroCount = newCount;
         if (typeof Storage !== 'undefined') {
             localStorage.setItem('twitchOverlayConfig', JSON.stringify(config));
-        }
-        // Actualizar UI si está visible
-        this.updateUIDisplay();
-    },
-    
-    updateUIDisplay() {
-        const countInput = document.getElementById('gordiperro-count');
-        if (countInput) {
-            countInput.value = config.gordiperroCount;
-            console.log('UI actualizada: contador = ' + config.gordiperroCount);
         }
     }
 };

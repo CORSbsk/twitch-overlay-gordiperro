@@ -108,19 +108,10 @@ body {
     font-size: 14px;
     font-weight: bold;
     margin-right: 10px;
-    margin-bottom: 10px;
 }
 
 #config-ui button:hover {
     background: #7a35e0;
-}
-
-#config-ui #btn-test {
-    background: #FF6B35;
-}
-
-#config-ui #btn-test:hover {
-    background: #E55A25;
 }
 
 #config-ui .info {
@@ -342,47 +333,5 @@ body {
     }
     100% {
         transform: translate(0, 0) rotate(0deg);
-    }
-}
-
-/* Animación de distribución: Imagen sale del centro hacia los laterales */
-@keyframes distributeOut {
-    0% {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0.3) translateY(200px);
-        opacity: 0;
-    }
-}
-
-/* Pilas de cartas con sistema dinámico */
-.gordiperro-stack {
-    position: relative;
-    display: inline-block;
-}
-
-/* Animación de entrada para pilas */
-@keyframes stackFadeIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.8) rotate(-5deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
-}
-
-/* Animación de entrada para cartas individuales en pilas */
-@keyframes cardFadeIn {
-    0% {
-        opacity: 0;
-        transform: translateY(-20px) rotate(10deg);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) rotate(0deg);
     }
 }
