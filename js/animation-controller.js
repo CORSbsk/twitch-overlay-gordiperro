@@ -116,39 +116,23 @@ const animationController = {
             // Reiniciar pitch del sonido barf
             soundManager.resetPitch();
             
-            // Mostrar multiplicador inicial
+            // Mostrar multiplicador directamente con el número final
             multiplier.style.display = 'block';
             multiplier.textContent = `x${gordiperroCount}`;
             
-            // Animación del multiplicador incrementando
-            let currentCount = 1;
-            const targetCount = gordiperroCount;
-            const incrementDelay = Math.max(100, 500 - (targetCount * 2)); // Más rápido con más count
+            // Reproducir sonido barf una vez con el pitch inicial
+            soundManager.playBarfWithIncrement();
             
-            const incrementInterval = setInterval(() => {
-                if (currentCount <= targetCount) {
-                    // Actualizar multiplicador
-                    multiplier.textContent = `x${currentCount}`;
-                    
-                    // Reproducir sonido barf con pitch incrementado
-                    soundManager.playBarfWithIncrement();
-                    
-                    // Efecto visual errático en la imagen
-                    centralImage.classList.add('balatro-shake');
-                    setTimeout(() => {
-                        centralImage.classList.remove('balatro-shake');
-                    }, 100);
-                    
-                    currentCount++;
-                } else {
-                    clearInterval(incrementInterval);
-                    
-                    // Esperar un momento antes de continuar
-                    setTimeout(() => {
-                        resolve();
-                    }, 500);
-                }
-            }, incrementDelay);
+            // Efecto visual errático en la imagen
+            centralImage.classList.add('balatro-shake');
+            setTimeout(() => {
+                centralImage.classList.remove('balatro-shake');
+            }, 100);
+            
+            // Esperar un momento antes de continuar
+            setTimeout(() => {
+                resolve();
+            }, 500);
         });
     },
     
