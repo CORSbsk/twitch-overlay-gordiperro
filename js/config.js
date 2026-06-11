@@ -50,6 +50,7 @@ const configUI = {
             <input type="number" id="gordiperro-count" min="0" value="0">
             
             <button id="btn-save">Guardar Configuración</button>
+            <button id="btn-test-alert">Probar alerta</button>
             <button id="btn-close">Cerrar</button>
             
             <div class="info">
@@ -78,6 +79,20 @@ const configUI = {
             console.log('Event listener agregado a btn-close');
         } else {
             console.error('btn-close no encontrado');
+        }
+
+        const btnTest = document.getElementById('btn-test-alert');
+        if (btnTest) {
+            btnTest.addEventListener('click', () => {
+                if (typeof alertManager !== 'undefined' && typeof alertManager.handleRewardRedemption === 'function') {
+                    alertManager.handleRewardRedemption({ test: true });
+                } else {
+                    console.error('alertManager no disponible para prueba de alerta');
+                }
+            });
+            console.log('Event listener agregado a btn-test-alert');
+        } else {
+            console.error('btn-test-alert no encontrado');
         }
     },
     
