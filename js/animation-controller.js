@@ -11,29 +11,40 @@ const animationController = {
     },
     
     // Iniciar secuencia de animación completa
-    async startAnimationSequence(gordiperroCount) {
+    async startAnimationSequence(deltaCount) {
+        // deltaCount: número de nuevas unidades a animar en esta secuencia (normalmente 1)
         if (this.isAnimating) {
-            console.log('Animación en curso, agregando a cola');
-            this.animationQueue.push(gordiperroCount);
+            console.log('Animación en curso, agregando a cola (delta)', deltaCount);
+            this.animationQueue.push(deltaCount);
             return;
         }
-        
+
         this.isAnimating = true;
-        console.log(`Iniciando secuencia de animación para gordiperro #${gordiperroCount}`);
-        
+        console.log(`Iniciando secuencia de animación para delta=${deltaCount}`);
+
         try {
             // Paso 1: Reproducir música de alerta y animación de entrada (5 segundos)
             await this.playEntryAnimation();
-            
+
             // Paso 2: Rotación 3D errática en centro (1 segundo)
             await this.play3DRotation();
-            
-            // Paso 3: Multiplicador dinámico con sonido barf
-            await this.playMultiplierAnimation(gordiperroCount);
-            
-            // Paso 4: Distribuir cartas a laterales
-            await this.distributeCards(gordiperroCount);
-            
+
+            // Paso 3: Multiplicador dinámico con sonido barf (usar delta como objetivo)
+            await this.playMultiplierAnimation(deltaCount);
+
+            // Paso 4: Animar deltaCount tarjetas hacia las pilas (una por una)
+            for (let i = 0; i < deltaCount; i++) {
+                if (cardDistributor && typeof cardDistributor.addCardAnimated === 'function') {
+                    await cardDistributor.addCardAnimated();
+                }
+            }
+
+            // Finalmente, reconstruir pilas para asegurar consistencia usando el total persistente
+            if (cardDistributor && typeof cardDistributor.rebuildStacks === 'function') {
+                const total = (typeof storage.loadCount === 'function') ? storage.loadCount() : null;
+                if (total !== null) cardDistributor.rebuildStacks(total);
+            }
+
             console.log('Secuencia de animación completada');
         } catch (e) {
             console.error('Error en secuencia de animación:', e);
@@ -51,8 +62,9 @@ const animationController = {
             
             // Resetear COMPLETAMENTE todos los estilos
             centralAlert.classList.remove('entry-animation', 'active');
-            centralAlert.style.transform = 'translateY(-100vh)'; // Posición inicial EXPLÍCITA
-            centralAlert.style.opacity = '0';
+            // Evitar uso de transform inline porque puede bloquear la animación CSS
+            centralAlert.style.transform = '';
+            centralAlert.style.opacity = '';
             centralAlert.style.animation = 'none';
             
             // Limpiar contenido
@@ -62,10 +74,10 @@ const animationController = {
             
             centralImage.style.animation = 'none';
             centralImage.style.transform = 'none';
+            // Asegurar que la imagen central sea visible para la entrada
+            centralImage.style.display = 'block';
             
-            // Forzar reflow MÚLTIPLES VECES para garantizar reset
-            void centralAlert.offsetWidth;
-            void centralAlert.offsetHeight;
+            // Forzar reflow para garantizar reset de la animación
             void centralAlert.offsetWidth;
             
             // Ocultar multiplicador durante entrada
@@ -73,9 +85,14 @@ const animationController = {
                 multiplier.style.display = 'none';
             }
             
-            // Iniciar animación
-            centralAlert.classList.add('entry-animation');
+            // Iniciar animación (activar antes el elemento para que sea visible)
             centralAlert.classList.add('active');
+
+            // Forzar un frame antes de añadir la clase de animación para que el navegador
+            // reconozca la transición desde el estado inicial hasta el animado.
+            requestAnimationFrame(() => {
+                centralAlert.classList.add('entry-animation');
+            });
             
             // Reproducir música de alerta
             soundManager.playAlertMusic();
@@ -179,21 +196,32 @@ const animationController = {
             // Animación de salida del centro hacia los laterales
             centralImage.style.animation = 'distributeOut 0.8s ease-in-out forwards';
             
-            // Después de la animación, ocultar alerta y distribuir cartas
+            // Después de la animación, ocultar alerta y animar inserción de una carta
             setTimeout(() => {
+                // Mantener alerta visualmente removida
                 centralAlert.classList.remove('active');
-                
+
                 // Reiniciar estilos
                 centralImage.style.animation = 'none';
                 centralImage.style.transform = 'none';
-                
-                // Llamar al distribuidor de cartas
-                cardDistributor.distributeCards(gordiperroCount);
-                
-                // Esperar a que termine la distribución
-                setTimeout(() => {
-                    resolve();
-                }, 1500);
+
+                // Animar una sola carta desde el centro hacia la pila correspondiente
+                if (cardDistributor && typeof cardDistributor.addCardAnimated === 'function') {
+                    // Await the addCardAnimated promise so we can reliably finish after animation
+                    try {
+                        await cardDistributor.addCardAnimated();
+                    } catch (e) {
+                        console.warn('addCardAnimated fallo:', e);
+                    }
+                } else {
+                    // Fallback: rebuild full distribution
+                    if (cardDistributor && typeof cardDistributor.rebuildStacks === 'function') {
+                        cardDistributor.rebuildStacks(gordiperroCount);
+                    }
+                }
+
+                // Continue after the animation promise has resolved
+                resolve();
             }, 800);
         });
     },

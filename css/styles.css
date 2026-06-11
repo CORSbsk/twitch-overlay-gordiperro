@@ -177,10 +177,8 @@ body {
     top: 0;
     width: 30%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    /* padding: 20px; */
+    display: block;
+    overflow: visible;
     pointer-events: none;
 }
 
@@ -190,10 +188,8 @@ body {
     top: 0;
     width: 30%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    /* padding: 20px; */
+    display: block;
+    overflow: visible;
     pointer-events: none;
 }
 
