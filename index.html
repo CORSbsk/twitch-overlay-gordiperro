@@ -15,6 +15,17 @@
         <p class="info">Presiona Shift+C para mostrar/ocultar el panel de configuración</p>
     </div>
 
+    <!-- Barra de carga -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h2>Cargando recursos...</h2>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+            <p id="loading-status">Inicializando...</p>
+        </div>
+    </div>
+
     <!-- UI de configuración (oculta por defecto) -->
     <div id="config-ui"></div>
 
@@ -44,6 +55,62 @@
         // Inicializar UI de configuración inmediatamente (antes de conectar con Twitch)
         configUI.init();
         
+        // Iniciar carga de sonidos al cargar la página
+        async function cargarRecursos() {
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingStatus = document.getElementById('loading-status');
+            const loadingScreen = document.getElementById('loading-screen');
+            
+            const onProgress = (percent, status) => {
+                if (loadingBar) {
+                    loadingBar.style.width = percent + '%';
+                }
+                if (loadingStatus) {
+                    loadingStatus.textContent = status;
+                }
+                console.log(`Carga: ${percent}% - ${status}`);
+            };
+            
+            try {
+                // Inicializar alert manager
+                await alertManager.init();
+                onProgress(20, 'Módulos inicializados');
+                
+                // Cargar sonidos
+                const soundsLoaded = await alertManager.initSounds(onProgress);
+                
+                if (soundsLoaded) {
+                    onProgress(100, 'Sistema listo');
+                    
+                    // Ocultar pantalla de carga después de un breve momento
+                    setTimeout(() => {
+                        if (loadingScreen) {
+                            loadingScreen.classList.add('hidden');
+                        }
+                        console.log('Pantalla de carga oculta');
+                    }, 500);
+                } else {
+                    onProgress(100, 'Error al cargar sonidos, pero el sistema continuará');
+                    setTimeout(() => {
+                        if (loadingScreen) {
+                            loadingScreen.classList.add('hidden');
+                        }
+                    }, 2000);
+                }
+            } catch (e) {
+                console.error('Error al cargar recursos:', e);
+                onProgress(100, 'Error al cargar recursos');
+                setTimeout(() => {
+                    if (loadingScreen) {
+                        loadingScreen.classList.add('hidden');
+                    }
+                }, 2000);
+            }
+        }
+        
+        // Iniciar carga de recursos
+        cargarRecursos();
+        
         // 1. DETECTAR TOKEN EN URL
         const params = new URLSearchParams(window.location.hash.replace('#', '?'));
         const token = params.get('access_token');
@@ -62,9 +129,6 @@
         // 2. INICIAR SISTEMA COMPLETO
         async function iniciarSistema() {
             console.log('Iniciando sistema Gordiperro Overlay...');
-            
-            // Inicializar alert manager (inicializa todos los módulos)
-            await alertManager.init();
             
             // Inicializar conexión con Twitch
             twitchConnection.init(token);

@@ -47,6 +47,21 @@ const animationController = {
     async playEntryAnimation() {
         return new Promise((resolve) => {
             const centralAlert = document.getElementById('central-alert');
+            
+            // Reiniciar estado de elementos
+            centralAlert.classList.remove('entry-animation');
+            centralAlert.classList.remove('active');
+            
+            // Forzar reflow para reiniciar animación
+            void centralAlert.offsetWidth;
+            
+            // Ocultar multiplicador durante entrada
+            const multiplier = document.getElementById('multiplier');
+            if (multiplier) {
+                multiplier.style.display = 'none';
+            }
+            
+            // Iniciar animación
             centralAlert.classList.add('entry-animation');
             centralAlert.classList.add('active');
             

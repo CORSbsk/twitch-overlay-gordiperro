@@ -6,17 +6,35 @@ const soundManager = {
     barfBuffer: null,
     currentPitch: 1.0,
     pitchIncrement: 0.02, // 2% incremento
+    isLoading: false,
+    onProgress: null,
     
     // Inicializar AudioContext
-    async init() {
+    async init(onProgress = null) {
         try {
+            this.onProgress = onProgress;
+            this.isLoading = true;
+            
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             console.log('AudioContext inicializado');
             
+            if (this.onProgress) {
+                this.onProgress(10, 'AudioContext inicializado');
+            }
+            
             // Cargar archivos de sonido
             await this.loadSounds();
+            
+            this.isLoading = false;
+            if (this.onProgress) {
+                this.onProgress(100, 'Sonidos cargados correctamente');
+            }
         } catch (e) {
             console.error('Error al inicializar AudioContext:', e);
+            this.isLoading = false;
+            if (this.onProgress) {
+                this.onProgress(0, 'Error al cargar sonidos');
+            }
         }
     },
     
@@ -24,19 +42,48 @@ const soundManager = {
     async loadSounds() {
         try {
             // Cargar alertMusic5seconds.wav
+            if (this.onProgress) {
+                this.onProgress(30, 'Cargando música de alerta...');
+            }
+            
             const alertMusicResponse = await fetch('resources/alertMusic5seconds.wav');
             const alertMusicArrayBuffer = await alertMusicResponse.arrayBuffer();
             this.alertMusicBuffer = await this.audioContext.decodeAudioData(alertMusicArrayBuffer);
             console.log('alertMusic5seconds.wav cargado');
             
+            if (this.onProgress) {
+                this.onProgress(60, 'Música de alerta cargada');
+            }
+            
             // Cargar barf.wav
+            if (this.onProgress) {
+                this.onProgress(70, 'Cargando sonido barf...');
+            }
+            
             const barfResponse = await fetch('resources/barf.wav');
             const barfArrayBuffer = await barfResponse.arrayBuffer();
             this.barfBuffer = await this.audioContext.decodeAudioData(barfArrayBuffer);
             console.log('barf.wav cargado');
+            
+            if (this.onProgress) {
+                this.onProgress(90, 'Sonido barf cargado');
+            }
         } catch (e) {
             console.error('Error al cargar sonidos:', e);
+            throw e;
         }
+    },
+    
+    // Verificar si está cargando
+    getIsLoading() {
+        return this.isLoading;
+    },
+    
+    // Verificar si está listo
+    isReady() {
+        return this.audioContext !== null && 
+               this.alertMusicBuffer !== null && 
+               this.barfBuffer !== null;
     },
     
     // Reproducir música de alerta (5 segundos)

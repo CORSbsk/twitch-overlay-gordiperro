@@ -17,12 +17,23 @@ const alertManager = {
         this.gordiperroCount = storage.loadCount();
         console.log(`Contador histórico cargado: ${this.gordiperroCount}`);
         
-        // Inicializar sonido (requiere interacción del usuario)
-        document.addEventListener('click', async () => {
-            if (!soundManager.audioContext) {
-                await soundManager.init();
-            }
-        }, { once: true });
+        // Mostrar gordiperros existentes al cargar la página
+        if (this.gordiperroCount > 0) {
+            cardDistributor.distributeCards(this.gordiperroCount);
+            console.log(`Distribuidas ${this.gordiperroCount} cartas al cargar`);
+        }
+    },
+    
+    // Inicializar sonidos con barra de carga
+    async initSounds(onProgress) {
+        try {
+            await soundManager.init(onProgress);
+            console.log('Sonidos inicializados correctamente');
+            return true;
+        } catch (e) {
+            console.error('Error al inicializar sonidos:', e);
+            return false;
+        }
     },
     
     // Manejar redención de recompensa
