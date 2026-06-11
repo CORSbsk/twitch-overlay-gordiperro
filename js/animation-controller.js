@@ -49,29 +49,35 @@ const animationController = {
             const centralAlert = document.getElementById('central-alert');
             const alertContainer = document.getElementById('alert-container');
             
-            // Clonar el elemento para forzar recarga completa de la animación
-            const clone = centralAlert.cloneNode(true);
-            alertContainer.replaceChild(clone, centralAlert);
+            // Reiniciar las clases y estilos
+            centralAlert.classList.remove('entry-animation', 'active');
             
-            // Actualizar referencia al nuevo elemento
-            const newCentralAlert = document.getElementById('central-alert');
+            // Limpiar contenido
+            const centralImage = document.getElementById('central-image');
+            const alertText = document.getElementById('alert-text');
+            const multiplier = document.getElementById('multiplier');
+            
+            centralImage.style.animation = 'none';
+            centralImage.style.transform = 'none';
+            
+            // Forzar reflow para resetear animación
+            void centralAlert.offsetWidth;
             
             // Ocultar multiplicador durante entrada
-            const multiplier = newCentralAlert.querySelector('#multiplier');
             if (multiplier) {
                 multiplier.style.display = 'none';
             }
             
             // Iniciar animación
-            newCentralAlert.classList.add('entry-animation');
-            newCentralAlert.classList.add('active');
+            centralAlert.classList.add('entry-animation');
+            centralAlert.classList.add('active');
             
             // Reproducir música de alerta
             soundManager.playAlertMusic();
             
             // Esperar 5 segundos (duración de la música)
             setTimeout(() => {
-                newCentralAlert.classList.remove('entry-animation');
+                centralAlert.classList.remove('entry-animation');
                 resolve();
             }, 5000);
         });
@@ -155,20 +161,31 @@ const animationController = {
         });
     },
     
-    // Distribuir cartas a laterales
+    // Distribuir cartas a laterales con animación
     async distributeCards(gordiperroCount) {
         return new Promise((resolve) => {
-            // Ocultar alerta central
             const centralAlert = document.getElementById('central-alert');
-            centralAlert.classList.remove('active');
+            const centralImage = document.getElementById('central-image');
             
-            // Llamar al distribuidor de cartas
-            cardDistributor.distributeCards(gordiperroCount);
+            // Animación de salida del centro hacia los laterales
+            centralImage.style.animation = 'distributeOut 0.8s ease-in-out forwards';
             
-            // Esperar a que termine la distribución
+            // Después de la animación, ocultar alerta y distribuir cartas
             setTimeout(() => {
-                resolve();
-            }, 1000);
+                centralAlert.classList.remove('active');
+                
+                // Reiniciar estilos
+                centralImage.style.animation = 'none';
+                centralImage.style.transform = 'none';
+                
+                // Llamar al distribuidor de cartas
+                cardDistributor.distributeCards(gordiperroCount);
+                
+                // Esperar a que termine la distribución
+                setTimeout(() => {
+                    resolve();
+                }, 1500);
+            }, 800);
         });
     },
     
