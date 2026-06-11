@@ -47,31 +47,34 @@ const animationController = {
     async playEntryAnimation() {
         return new Promise((resolve) => {
             const centralAlert = document.getElementById('central-alert');
-            const alertContainer = document.getElementById('alert-container');
             
-            // Clonar el elemento para forzar recarga completa de la animación
-            const clone = centralAlert.cloneNode(true);
-            alertContainer.replaceChild(clone, centralAlert);
+            // Reiniciar estado de elementos
+            centralAlert.classList.remove('entry-animation');
+            centralAlert.classList.remove('active');
             
-            // Actualizar referencia al nuevo elemento
-            const newCentralAlert = document.getElementById('central-alert');
+            // Resetear estilos inline que puedan interferir
+            centralAlert.style.transform = '';
+            centralAlert.style.opacity = '';
+            
+            // Forzar reflow para reiniciar animación
+            void centralAlert.offsetWidth;
             
             // Ocultar multiplicador durante entrada
-            const multiplier = newCentralAlert.querySelector('#multiplier');
+            const multiplier = document.getElementById('multiplier');
             if (multiplier) {
                 multiplier.style.display = 'none';
             }
             
             // Iniciar animación
-            newCentralAlert.classList.add('entry-animation');
-            newCentralAlert.classList.add('active');
+            centralAlert.classList.add('entry-animation');
+            centralAlert.classList.add('active');
             
             // Reproducir música de alerta
             soundManager.playAlertMusic();
             
             // Esperar 5 segundos (duración de la música)
             setTimeout(() => {
-                newCentralAlert.classList.remove('entry-animation');
+                centralAlert.classList.remove('entry-animation');
                 resolve();
             }, 5000);
         });
