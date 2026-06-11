@@ -189,41 +189,35 @@ const animationController = {
     
     // Distribuir cartas a laterales con animación
     async distributeCards(gordiperroCount) {
-        return new Promise((resolve) => {
-            const centralAlert = document.getElementById('central-alert');
-            const centralImage = document.getElementById('central-image');
-            
-            // Animación de salida del centro hacia los laterales
-            centralImage.style.animation = 'distributeOut 0.8s ease-in-out forwards';
-            
-            // Después de la animación, ocultar alerta y animar inserción de una carta
-            setTimeout(() => {
-                // Mantener alerta visualmente removida
-                centralAlert.classList.remove('active');
+        const centralAlert = document.getElementById('central-alert');
+        const centralImage = document.getElementById('central-image');
 
-                // Reiniciar estilos
-                centralImage.style.animation = 'none';
-                centralImage.style.transform = 'none';
+        // Animación de salida del centro hacia los laterales
+        centralImage.style.animation = 'distributeOut 0.8s ease-in-out forwards';
 
-                // Animar una sola carta desde el centro hacia la pila correspondiente
-                if (cardDistributor && typeof cardDistributor.addCardAnimated === 'function') {
-                    // Await the addCardAnimated promise so we can reliably finish after animation
-                    try {
-                        await cardDistributor.addCardAnimated();
-                    } catch (e) {
-                        console.warn('addCardAnimated fallo:', e);
-                    }
-                } else {
-                    // Fallback: rebuild full distribution
-                    if (cardDistributor && typeof cardDistributor.rebuildStacks === 'function') {
-                        cardDistributor.rebuildStacks(gordiperroCount);
-                    }
-                }
+        // Esperar el tiempo de salida antes de continuar
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
-                // Continue after the animation promise has resolved
-                resolve();
-            }, 800);
-        });
+        // Mantener alerta visualmente removida
+        centralAlert.classList.remove('active');
+
+        // Reiniciar estilos
+        centralImage.style.animation = 'none';
+        centralImage.style.transform = 'none';
+
+        // Animar una sola carta desde el centro hacia la pila correspondiente
+        if (cardDistributor && typeof cardDistributor.addCardAnimated === 'function') {
+            try {
+                await cardDistributor.addCardAnimated();
+            } catch (e) {
+                console.warn('addCardAnimated fallo:', e);
+            }
+        } else {
+            // Fallback: rebuild full distribution
+            if (cardDistributor && typeof cardDistributor.rebuildStacks === 'function') {
+                cardDistributor.rebuildStacks(gordiperroCount);
+            }
+        }
     },
     
     // Procesar cola de animaciones
