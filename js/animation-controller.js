@@ -189,7 +189,6 @@ const animationController = {
                 cardDistributor.rebuildStacks(gordiperroCount);
             }
         }
-    }
     },
     
     // Procesar cola de animaciones
