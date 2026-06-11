@@ -201,12 +201,16 @@ body {
 .gordiperro-card {
     width: 80px;
     height: 100px;
-    margin: 5px;
+    margin: 0; /* removed margin per request */
+    padding: 0;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     transition: transform 0.3s ease;
     animation: cardDeal 0.5s ease-out;
+    box-shadow: none !important; /* ensure no shadow */
+    border: none !important; /* ensure no border */
+    background-color: transparent;
 }
 
 /* Cartas distribuidas aleatoriamente */
@@ -219,6 +223,10 @@ body {
 /* Forzar sin borde en las imágenes gordiperro */
 .gordiperro-card, .gordiperro-card-random {
     border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: transparent !important;
 }
 
 @keyframes cardDeal {

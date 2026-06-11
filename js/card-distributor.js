@@ -78,9 +78,11 @@ const cardDistributor = {
             card.style.backgroundSize = 'contain';
             card.style.backgroundRepeat = 'no-repeat';
             card.style.backgroundPosition = 'center';
-            card.style.borderRadius = '8px';
+            card.style.borderRadius = '0';
             card.style.border = 'none';
-            card.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+            card.style.boxShadow = 'none';
+            card.style.margin = '0';
+            card.style.padding = '0';
             
             // Posición aleatoria
             card.style.left = randomX + 'px';
