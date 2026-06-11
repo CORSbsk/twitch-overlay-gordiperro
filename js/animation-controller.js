@@ -216,6 +216,11 @@ const animationController = {
     }
 };
 
+// Exponer globalmente para que otros scripts puedan usarlo
+if (typeof window !== 'undefined') {
+    window.animationController = animationController;
+}
+
 // Exportar para uso en otros módulos
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = animationController;
