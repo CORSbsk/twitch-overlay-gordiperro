@@ -249,19 +249,21 @@ body {
 
 /* Alerta central animada */
 #central-alert {
-    position: absolute;
+    /* Allow flex parent to center this element */
+    position: relative;
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     pointer-events: none;
+    z-index: 1500;
 }
 
 #central-alert.active {
     display: flex;
 }
 
-/* Imagen central con rotación 3D */
+/* Imagen central con rotación 3D (animación activada desde JS) */
 #central-image {
     width: 200px;
     height: 250px;
@@ -269,7 +271,6 @@ body {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    animation: rotate3D 1s ease-in-out infinite;
 }
 
 @keyframes rotate3D {
