@@ -82,10 +82,11 @@ const animationController = {
             
             // Esperar 5 segundos (duración de la música)
             setTimeout(() => {
-                // Resetear estilos al terminar la animación
+                // Remover la clase de entrada pero mantener la alerta activa
                 centralAlert.classList.remove('entry-animation');
-                centralAlert.style.transform = 'translateY(-100vh)'; // Volver a posición inicial
-                centralAlert.style.opacity = '0';
+                // Dejar el elemento en su posición final para la rotación y multiplicador
+                centralAlert.style.transform = '';
+                centralAlert.style.opacity = '';
                 resolve();
             }, 5000);
         });
