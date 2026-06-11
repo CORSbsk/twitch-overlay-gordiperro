@@ -160,7 +160,6 @@ const animationController = {
     
     // Distribuir cartas a laterales
     async distributeCards(gordiperroCount) {
-<<<<<<< HEAD
         const centralAlert = document.getElementById('central-alert');
         const centralImage = document.getElementById('central-image');
 
@@ -190,21 +189,7 @@ const animationController = {
                 cardDistributor.rebuildStacks(gordiperroCount);
             }
         }
-=======
-        return new Promise((resolve) => {
-            // Ocultar alerta central
-            const centralAlert = document.getElementById('central-alert');
-            centralAlert.classList.remove('active');
-            
-            // Llamar al distribuidor de cartas
-            cardDistributor.distributeCards(gordiperroCount);
-            
-            // Esperar a que termine la distribución
-            setTimeout(() => {
-                resolve();
-            }, 1000);
-        });
->>>>>>> parent of 948c093 (feat: animation)
+    }
     },
     
     // Procesar cola de animaciones
