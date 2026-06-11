@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Widget de Recompensas</title>
+    <style>
+        /* Fondo transparente para OBS */
+        body { margin: 0; background: transparent; color: white; font-family: sans-serif; overflow: hidden; }
+        
+        #setup-ui { padding: 20px; background: rgba(0,0,0,0.8); border-radius: 10px; display: block; text-align: center; }
+        
+        .btn-twitch { background: #9146FF; color: white; padding: 15px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; }
+
+        /* Contenedor de las alertas */
+        #alert-container { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+        
+        .alert-box { background: rgba(145, 70, 255, 0.9); padding: 20px; border-radius: 15px; border: 2px solid white; animation: fadeout 4s forwards; }
+
+        @keyframes fadeout { 0% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: scale(0.8); } }
+    </style>
+</head>
+<body>
+
+    <div id="setup-ui">
+        <h2>Configuración del Overlay</h2>
+        <button class="btn-twitch" onclick="login()">Conectar con Twitch</button>
+        <p>Una vez conectes, copia la URL resultante y pégala en OBS.</p>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <script>
+        // 1. CONFIGURACIÓN: Pega aquí tu Client ID de Twitch
+        const CLIENT_ID = 'TU_CLIENT_ID_AQUÍ';
+        const REDIRECT_URI = window.location.href.split('#')[0]; // Toma la URL actual automáticamente
+
+        // 2. DETECTAR TOKEN EN URL
+        const params = new URLSearchParams(window.location.hash.replace('#', '?'));
+        const token = params.get('access_token');
+
+        if (token) {
+            document.getElementById('setup-ui').style.display = 'none';
+            iniciarConexion();
+        }
+
+        function login() {
+            const scope = 'channel:read:redemptions';
+            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${encodeURIComponent(scope)}`;
+            window.location.href = authUrl;
+        }
+
+        // 3. CONEXIÓN CON TWITCH
+        async function iniciarConexion() {
+            // Obtener el ID del usuario
+            const userRes = await fetch('https://api.twitch.tv/helix/users', {
+                headers: { 'Authorization': `Bearer ${token}`, 'Client-Id': CLIENT_ID }
+            });
+            const userData = await userRes.json();
+            const broadcasterId = userData.data[0].id;
+
+            // Conectar al WebSocket
+            const socket = new WebSocket('wss://eventsub.wss.twitch.tv/ws');
+
+            socket.onmessage = async (event) => {
+                const msg = JSON.parse(event.data);
+
+                if (msg.metadata.message_type === "session_welcome") {
+                    const sessionId = msg.payload.session.id;
+                    // Suscribirse a los puntos de canal
+                    await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Client-Id': CLIENT_ID,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type: "channel.channel_points_custom_reward_redemption.add",
+                            version: "1",
+                            condition: { broadcaster_user_id: broadcasterId },
+                            transport: { method: "websocket", session_id: sessionId }
+                        })
+                    });
+                }
+
+                if (msg.metadata.message_type === "notification") {
+                    const eventData = msg.payload.event;
+                    mostrarAlerta(eventData.user_name, eventData.reward.title);
+                }
+            };
+        }
+
+        // 4. LOGICA VISUAL SIMPLE
+        function mostrarAlerta(usuario, recompensa) {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = 'alert-box';
+            alert.innerHTML = `<h1>${usuario}</h1><p>canjeó: ${recompensa}</p>`;
+            
+            container.appendChild(alert);
+
+            // Borrar el elemento después de que termine la animación
+            setTimeout(() => alert.remove(), 4000);
+        }
+    </script>
+</body>
+</html>
