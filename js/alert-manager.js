@@ -19,13 +19,8 @@ const alertManager = {
         
         // Mostrar gordiperros existentes al cargar la página
         if (this.gordiperroCount > 0) {
-            if (cardDistributor && typeof cardDistributor.rebuildStacks === 'function') {
-                cardDistributor.rebuildStacks(this.gordiperroCount);
-                console.log(`Reconstruidas ${this.gordiperroCount} cartas al cargar`);
-            } else {
-                cardDistributor.distributeCards(this.gordiperroCount);
-                console.log(`Distribuidas ${this.gordiperroCount} cartas al cargar (fallback)`);
-            }
+            cardDistributor.distributeCards(this.gordiperroCount);
+            console.log(`Distribuidas ${this.gordiperroCount} cartas al cargar`);
         }
     },
     
@@ -46,18 +41,14 @@ const alertManager = {
         console.log('AlertManager: Redención recibida', data);
         
         // Incrementar contador
-        const previous = this.gordiperroCount;
         this.gordiperroCount = storage.incrementCount();
-        console.log(`Nuevo contador de gordiperros: ${this.gordiperroCount} (prev ${previous})`);
-
+        console.log(`Nuevo contador de gordiperros: ${this.gordiperroCount}`);
+        
         // Actualizar UI de configuración
         configUI.updateUIDisplay();
-
-        // Encolar una secuencia de animación por cada nueva unidad (delta = 1)
-        const delta = this.gordiperroCount - previous;
-        for (let i = 0; i < delta; i++) {
-            animationController.startAnimationSequence(1);
-        }
+        
+        // Iniciar animación
+        this.triggerAnimation();
     },
     
     // Disparar animación
@@ -98,12 +89,8 @@ const alertManager = {
         this.gordiperroCount = storage.setCount(count);
         console.log(`Contador establecido manualmente: ${this.gordiperroCount}`);
         
-        // Reconstruir pilas con el nuevo contador
-        if (cardDistributor && typeof cardDistributor.rebuildStacks === 'function') {
-            cardDistributor.rebuildStacks(this.gordiperroCount);
-        } else {
-            cardDistributor.distributeCards(this.gordiperroCount);
-        }
+        // Redistribuir cartas con el nuevo contador
+        cardDistributor.distributeCards(this.gordiperroCount);
     },
     
     // Reiniciar sistema
