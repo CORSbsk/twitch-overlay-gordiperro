@@ -2,45 +2,52 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Widget de Recompensas</title>
-    <style>
-        /* Fondo transparente para OBS */
-        body { margin: 0; background: transparent; color: white; font-family: sans-serif; overflow: hidden; }
-        
-        #setup-ui { padding: 20px; background: rgba(0,0,0,0.8); border-radius: 10px; display: block; text-align: center; }
-        
-        .btn-twitch { background: #9146FF; color: white; padding: 15px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; }
-
-        /* Contenedor de las alertas */
-        #alert-container { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        
-        .alert-box { background: rgba(145, 70, 255, 0.9); padding: 20px; border-radius: 15px; border: 2px solid white; animation: fadeout 4s forwards; }
-
-        @keyframes fadeout { 0% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: scale(0.8); } }
-    </style>
+    <title>Gordiperro Overlay - Twitch</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
+    <!-- Setup UI inicial -->
     <div id="setup-ui">
         <h2>Configuración del Overlay</h2>
         <button class="btn-twitch" onclick="login()">Conectar con Twitch</button>
         <p>Una vez conectes, copia la URL resultante y pégala en OBS.</p>
+        <p class="info">Presiona Shift+C para mostrar/ocultar el panel de configuración</p>
     </div>
 
-    <div id="alert-container"></div>
+    <!-- UI de configuración (oculta por defecto) -->
+    <div id="config-ui"></div>
 
+    <!-- Laterales para distribución de cartas -->
+    <div id="left-side"></div>
+    <div id="right-side"></div>
+
+    <!-- Contenedor de alerta central -->
+    <div id="alert-container">
+        <div id="central-alert">
+            <div id="central-image"></div>
+            <div id="alert-text"></div>
+            <div id="multiplier"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/sound-manager.js"></script>
+    <script src="js/card-distributor.js"></script>
+    <script src="js/animation-controller.js"></script>
+    <script src="js/twitch-connection.js"></script>
+    <script src="js/alert-manager.js"></script>
+    
     <script>
-        // 1. CONFIGURACIÓN: Pega aquí tu Client ID de Twitch
-        const CLIENT_ID = 'wzrtlpnuuigex61t9ymc4np9subyur';
-        const REDIRECT_URI = window.location.href.split('#')[0]; // Toma la URL actual automáticamente
-
-        // 2. DETECTAR TOKEN EN URL
+        // 1. DETECTAR TOKEN EN URL
         const params = new URLSearchParams(window.location.hash.replace('#', '?'));
         const token = params.get('access_token');
 
         if (token) {
             document.getElementById('setup-ui').style.display = 'none';
-            iniciarConexion();
+            iniciarSistema();
         }
 
         function login() {
@@ -49,58 +56,22 @@
             window.location.href = authUrl;
         }
 
-        // 3. CONEXIÓN CON TWITCH
-        async function iniciarConexion() {
-            // Obtener el ID del usuario
-            const userRes = await fetch('https://api.twitch.tv/helix/users', {
-                headers: { 'Authorization': `Bearer ${token}`, 'Client-Id': CLIENT_ID }
-            });
-            const userData = await userRes.json();
-            const broadcasterId = userData.data[0].id;
-
-            // Conectar al WebSocket
-            const socket = new WebSocket('wss://eventsub.wss.twitch.tv/ws');
-
-            socket.onmessage = async (event) => {
-                const msg = JSON.parse(event.data);
-
-                if (msg.metadata.message_type === "session_welcome") {
-                    const sessionId = msg.payload.session.id;
-                    // Suscribirse a los puntos de canal
-                    await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Client-Id': CLIENT_ID,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            type: "channel.channel_points_custom_reward_redemption.add",
-                            version: "1",
-                            condition: { broadcaster_user_id: broadcasterId },
-                            transport: { method: "websocket", session_id: sessionId }
-                        })
-                    });
-                }
-
-                if (msg.metadata.message_type === "notification") {
-                    const eventData = msg.payload.event;
-                    mostrarAlerta(eventData.user_name, eventData.reward.title);
-                }
-            };
-        }
-
-        // 4. LOGICA VISUAL SIMPLE
-        function mostrarAlerta(usuario, recompensa) {
-            const container = document.getElementById('alert-container');
-            const alert = document.createElement('div');
-            alert.className = 'alert-box';
-            alert.innerHTML = `<h1>${usuario}</h1><p>canjeó: ${recompensa}</p>`;
+        // 2. INICIAR SISTEMA COMPLETO
+        async function iniciarSistema() {
+            console.log('Iniciando sistema Gordiperro Overlay...');
             
-            container.appendChild(alert);
-
-            // Borrar el elemento después de que termine la animación
-            setTimeout(() => alert.remove(), 4000);
+            // Inicializar alert manager (inicializa todos los módulos)
+            await alertManager.init();
+            
+            // Inicializar conexión con Twitch
+            twitchConnection.init(token);
+            
+            // Configurar callback para cuando se canjee la recompensa específica
+            twitchConnection.onReward((data) => {
+                alertManager.handleRewardRedemption(data);
+            });
+            
+            console.log('Sistema iniciado correctamente');
         }
     </script>
 </body>
