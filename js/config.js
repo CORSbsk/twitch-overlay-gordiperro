@@ -15,16 +15,19 @@ const configUI = {
     
     init() {
         this.element = document.getElementById('config-ui');
-        if (!this.element) {
-            this.createUI();
+        if (this.element) {
+            if (this.element.children.length === 0) {
+                this.populateUI();
+            }
+        } else {
+            console.error('Elemento #config-ui no encontrado en el DOM');
         }
         this.setupKeyboardListener();
     },
     
-    createUI() {
-        const ui = document.createElement('div');
-        ui.id = 'config-ui';
-        ui.innerHTML = `
+    populateUI() {
+        console.log('Poblando UI de configuración...');
+        this.element.innerHTML = `
             <h3>Configuración del Overlay</h3>
             <label for="reward-id">ID de Recompensa (UUID):</label>
             <input type="text" id="reward-id" placeholder="Pega el UUID de la recompensa aquí">
@@ -32,8 +35,8 @@ const configUI = {
             <label for="gordiperro-count">Contador de Gordiperros (manual):</label>
             <input type="number" id="gordiperro-count" min="0" value="0">
             
-            <button onclick="configUI.saveConfig()">Guardar Configuración</button>
-            <button onclick="configUI.close()">Cerrar</button>
+            <button id="btn-save">Guardar Configuración</button>
+            <button id="btn-close">Cerrar</button>
             
             <div class="info">
                 <p><strong>Instrucciones:</strong></p>
@@ -44,28 +47,65 @@ const configUI = {
                 <p>5. Puedes ajustar manualmente el contador si es necesario</p>
             </div>
         `;
-        document.body.appendChild(ui);
-        this.element = ui;
+        
+        // Agregar event listeners a los botones
+        const btnSave = document.getElementById('btn-save');
+        const btnClose = document.getElementById('btn-close');
+        
+        if (btnSave) {
+            btnSave.addEventListener('click', () => this.saveConfig());
+            console.log('Event listener agregado a btn-save');
+        } else {
+            console.error('btn-save no encontrado');
+        }
+        
+        if (btnClose) {
+            btnClose.addEventListener('click', () => this.close());
+            console.log('Event listener agregado a btn-close');
+        } else {
+            console.error('btn-close no encontrado');
+        }
     },
     
     show() {
+        console.log('Mostrando UI de configuración...');
         if (this.element) {
             this.element.classList.add('visible');
+            console.log('Clase visible agregada');
             // Cargar valores actuales
-            document.getElementById('reward-id').value = config.rewardId || '';
-            document.getElementById('gordiperro-count').value = config.gordiperroCount || 0;
+            const rewardIdInput = document.getElementById('reward-id');
+            const countInput = document.getElementById('gordiperro-count');
+            
+            if (rewardIdInput) {
+                rewardIdInput.value = config.rewardId || '';
+                console.log('Valor de reward-id cargado:', config.rewardId);
+            } else {
+                console.error('Elemento reward-id no encontrado');
+            }
+            
+            if (countInput) {
+                countInput.value = config.gordiperroCount || 0;
+                console.log('Valor de gordiperro-count cargado:', config.gordiperroCount);
+            } else {
+                console.error('Elemento gordiperro-count no encontrado');
+            }
+        } else {
+            console.error('Elemento config-ui no existe');
         }
         this.isVisible = true;
     },
     
     close() {
+        console.log('Cerrando UI de configuración...');
         if (this.element) {
             this.element.classList.remove('visible');
+            console.log('Clase visible removida');
         }
         this.isVisible = false;
     },
     
     toggle() {
+        console.log('Toggle llamado, isVisible:', this.isVisible);
         if (this.isVisible) {
             this.close();
         } else {
@@ -109,6 +149,7 @@ const configUI = {
             // Shift+C para mostrar/ocultar configuración
             if (e.shiftKey && e.key === 'C') {
                 e.preventDefault();
+                console.log('Shift+C detectado');
                 this.toggle();
             }
         });

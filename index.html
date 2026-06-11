@@ -41,6 +41,9 @@
     <script src="js/alert-manager.js"></script>
     
     <script>
+        // Inicializar UI de configuración inmediatamente (antes de conectar con Twitch)
+        configUI.init();
+        
         // 1. DETECTAR TOKEN EN URL
         const params = new URLSearchParams(window.location.hash.replace('#', '?'));
         const token = params.get('access_token');
