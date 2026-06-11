@@ -116,23 +116,41 @@ const animationController = {
             // Reiniciar pitch del sonido barf
             soundManager.resetPitch();
             
-            // Mostrar multiplicador directamente con el número final
+            // Mostrar multiplicador inicial desde 1
             multiplier.style.display = 'block';
-            multiplier.textContent = `x${gordiperroCount}`;
+            multiplier.textContent = 'x1';
             
-            // Reproducir sonido barf una vez con el pitch inicial
-            soundManager.playBarfWithIncrement();
+            // Animación del multiplicador incrementando
+            let currentCount = 1;
+            const targetCount = gordiperroCount;
             
-            // Efecto visual errático en la imagen
-            centralImage.classList.add('balatro-shake');
-            setTimeout(() => {
-                centralImage.classList.remove('balatro-shake');
-            }, 100);
+            // Velocidad más rápida: base de 50ms, disminuye con más count
+            const incrementDelay = Math.max(30, 100 - (targetCount * 0.5));
             
-            // Esperar un momento antes de continuar
-            setTimeout(() => {
-                resolve();
-            }, 500);
+            const incrementInterval = setInterval(() => {
+                if (currentCount <= targetCount) {
+                    // Actualizar multiplicador
+                    multiplier.textContent = `x${currentCount}`;
+                    
+                    // Reproducir sonido barf con pitch incrementado
+                    soundManager.playBarfWithIncrement();
+                    
+                    // Efecto visual errático en la imagen
+                    centralImage.classList.add('balatro-shake');
+                    setTimeout(() => {
+                        centralImage.classList.remove('balatro-shake');
+                    }, 50);
+                    
+                    currentCount++;
+                } else {
+                    clearInterval(incrementInterval);
+                    
+                    // Esperar un momento antes de continuar
+                    setTimeout(() => {
+                        resolve();
+                    }, 300);
+                }
+            }, incrementDelay);
         });
     },
     

@@ -15,9 +15,17 @@ const configUI = {
     
     init() {
         this.element = document.getElementById('config-ui');
+        console.log('configUI.init() llamado');
+        console.log('Elemento #config-ui:', this.element);
+        
         if (this.element) {
+            console.log('Hijos del elemento antes de poblar:', this.element.children.length);
             if (this.element.children.length === 0) {
+                console.log('Poblando UI...');
                 this.populateUI();
+                console.log('Hijos del elemento después de poblar:', this.element.children.length);
+            } else {
+                console.log('Elemento ya tiene contenido, no se poblará');
             }
         } else {
             console.error('Elemento #config-ui no encontrado en el DOM');
@@ -69,9 +77,20 @@ const configUI = {
     
     show() {
         console.log('Mostrando UI de configuración...');
+        console.log('Elemento config-ui:', this.element);
+        console.log('Hijos del elemento:', this.element ? this.element.children.length : 0);
+        
         if (this.element) {
+            // Verificar si el elemento tiene contenido
+            if (this.element.children.length === 0) {
+                console.log('Elemento vacío, poblando...');
+                this.populateUI();
+            }
+            
             this.element.classList.add('visible');
             console.log('Clase visible agregada');
+            console.log('Estilo display:', window.getComputedStyle(this.element).display);
+            
             // Cargar valores actuales
             const rewardIdInput = document.getElementById('reward-id');
             const countInput = document.getElementById('gordiperro-count');
