@@ -201,7 +201,6 @@ body {
 .gordiperro-card {
     width: 80px;
     height: 100px;
-    margin: 5px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -214,11 +213,6 @@ body {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-}
-
-/* Forzar sin borde en las imágenes gordiperro */
-.gordiperro-card, .gordiperro-card-random {
-    border: none !important;
 }
 
 @keyframes cardDeal {
