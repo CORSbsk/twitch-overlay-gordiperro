@@ -49,8 +49,11 @@ const animationController = {
             const centralAlert = document.getElementById('central-alert');
             const alertContainer = document.getElementById('alert-container');
             
-            // Reiniciar las clases y estilos
+            // Resetear COMPLETAMENTE todos los estilos
             centralAlert.classList.remove('entry-animation', 'active');
+            centralAlert.style.transform = 'translateY(-100vh)'; // Posición inicial EXPLÍCITA
+            centralAlert.style.opacity = '0';
+            centralAlert.style.animation = 'none';
             
             // Limpiar contenido
             const centralImage = document.getElementById('central-image');
@@ -60,7 +63,9 @@ const animationController = {
             centralImage.style.animation = 'none';
             centralImage.style.transform = 'none';
             
-            // Forzar reflow para resetear animación
+            // Forzar reflow MÚLTIPLES VECES para garantizar reset
+            void centralAlert.offsetWidth;
+            void centralAlert.offsetHeight;
             void centralAlert.offsetWidth;
             
             // Ocultar multiplicador durante entrada
@@ -77,7 +82,10 @@ const animationController = {
             
             // Esperar 5 segundos (duración de la música)
             setTimeout(() => {
+                // Resetear estilos al terminar la animación
                 centralAlert.classList.remove('entry-animation');
+                centralAlert.style.transform = 'translateY(-100vh)'; // Volver a posición inicial
+                centralAlert.style.opacity = '0';
                 resolve();
             }, 5000);
         });

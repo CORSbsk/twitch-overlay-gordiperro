@@ -1,136 +1,119 @@
-// Módulo de distribución de cartas a laterales - Sistema de pilas dinámicas
+// Módulo de distribución de cartas a laterales - Distribución aleatoria dispersa
 
 const cardDistributor = {
     leftSide: null,
     rightSide: null,
     gordiperroImage: 'resources/gordiperro.png',
-    cardsPerStack: 5, // Máximo de cartas por pila antes de crear una nueva
+    cardWidth: 80,
+    cardHeight: 100,
     
     // Inicializar
     init() {
         this.leftSide = document.getElementById('left-side');
         this.rightSide = document.getElementById('right-side');
-        console.log('CardDistributor inicializado con sistema de pilas dinámicas');
+        console.log('CardDistributor inicializado con distribución aleatoria');
     },
     
-    // Distribuir cartas a laterales en pilas
+    // Distribuir cartas aleatoriamente en los laterales
     distributeCards(count) {
-        console.log(`Distribuyendo ${count} cartas de gordiperro en pilas dinámicas`);
+        console.log(`Distribuyendo ${count} cartas de gordiperro aleatoriamente`);
         
-        // Limpiar laterales (redistribución completa)
+        // Limpiar laterales
         this.clearSides();
         
-        // Calcular pilas necesarias
-        const numStacks = Math.ceil(count / this.cardsPerStack);
+        // Dividir cartas entre izquierda y derecha
+        const leftCount = Math.ceil(count / 2);
+        const rightCount = count - leftCount;
         
-        // Distribuir cartas entre las pilas
-        const leftStacks = [];
-        const rightStacks = [];
-        
-        // Crear arrays para las pilas alternando izquierda/derecha
-        for (let i = 0; i < numStacks; i++) {
-            if (i % 2 === 0) {
-                leftStacks.push([]);
-            } else {
-                rightStacks.push([]);
-            }
-        }
-        
-        // Llenar pilas con las cartas
-        for (let i = 0; i < count; i++) {
-            const stackIndex = Math.floor(i / this.cardsPerStack);
-            const isLeft = stackIndex % 2 === 0;
-            
-            if (isLeft) {
-                const actualStackIndex = Math.floor(stackIndex / 2);
-                if (actualStackIndex < leftStacks.length) {
-                    leftStacks[actualStackIndex].push(i);
-                }
-            } else {
-                const actualStackIndex = Math.floor((stackIndex - 1) / 2);
-                if (actualStackIndex < rightStacks.length) {
-                    rightStacks[actualStackIndex].push(i);
-                }
-            }
-        }
-        
-        // Crear elementos de pilas en el DOM
-        this.createStacksInDOM(leftStacks, 'left');
-        this.createStacksInDOM(rightStacks, 'right');
+        // Distribuir cartas
+        this.distributeToSide(this.leftSide, leftCount, 'left');
+        this.distributeToSide(this.rightSide, rightCount, 'right');
         
         // Aplicar animaciones
-        this.applyStackAnimations(count);
+        this.applyRandomAnimations();
     },
     
-    // Crear pilas en el DOM
-    createStacksInDOM(stacks, side) {
-        const container = side === 'left' ? this.leftSide : this.rightSide;
+    // Distribuir cartas a un lado con posiciones aleatorias
+    distributeToSide(container, count, side) {
+        // Obtener dimensiones del contenedor
+        const containerRect = container.getBoundingClientRect();
+        const containerWidth = window.innerWidth * 0.3; // 30% del ancho
+        const containerHeight = window.innerHeight; // Alto total
         
-        stacks.forEach((stack, stackIndex) => {
-            // Crear contenedor de pila
-            const stackContainer = document.createElement('div');
-            stackContainer.className = 'gordiperro-stack';
-            stackContainer.style.position = 'relative';
-            stackContainer.style.width = '100px';
-            stackContainer.style.height = '130px';
-            stackContainer.style.margin = '20px';
-            stackContainer.style.opacity = '0';
-            stackContainer.dataset.stackIndex = stackIndex;
+        // Array para rastrear posiciones ya usadas (evitar solapamiento excesivo)
+        const usedPositions = [];
+        
+        for (let i = 0; i < count; i++) {
+            // Generar posición aleatoria que no esté muy cerca de otras
+            let randomX, randomY, validPosition;
+            let attempts = 0;
             
-            // Crear cartas en la pila
-            stack.forEach((cardIndex, cardPosInStack) => {
-                const card = document.createElement('div');
-                card.className = 'gordiperro-card';
-                card.style.position = 'absolute';
-                card.style.width = '90px';
-                card.style.height = '120px';
-                card.style.backgroundImage = `url('${this.gordiperroImage}')`;
-                card.style.backgroundSize = 'contain';
-                card.style.backgroundRepeat = 'no-repeat';
-                card.style.backgroundPosition = 'center';
-                card.style.borderRadius = '8px';
-                card.style.border = '2px solid #9146FF';
-                card.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
-                card.dataset.cardIndex = cardIndex;
+            do {
+                randomX = Math.random() * (containerWidth - this.cardWidth);
+                randomY = Math.random() * (containerHeight - this.cardHeight);
                 
-                // Offset para efecto de pila (superpuesta)
-                const offset = cardPosInStack * 3;
-                card.style.top = offset + 'px';
-                card.style.left = offset + 'px';
-                card.style.zIndex = cardPosInStack;
-                card.style.transform = `rotate(${(Math.random() - 0.5) * 2}deg)`;
-                card.style.opacity = '0';
+                // Verificar que no esté muy cerca de otra posición
+                validPosition = !usedPositions.some(pos => 
+                    Math.abs(pos.x - randomX) < 60 && Math.abs(pos.y - randomY) < 60
+                );
                 
-                stackContainer.appendChild(card);
-            });
+                attempts++;
+            } while (!validPosition && attempts < 10); // Máximo 10 intentos
             
-            container.appendChild(stackContainer);
-        });
+            if (validPosition) {
+                usedPositions.push({ x: randomX, y: randomY });
+            } else {
+                // Si no encuentra posición válida, usar posición random sin validar
+                randomX = Math.random() * (containerWidth - this.cardWidth);
+                randomY = Math.random() * (containerHeight - this.cardHeight);
+            }
+            
+            // Crear carta
+            const card = document.createElement('div');
+            card.className = 'gordiperro-card-random';
+            card.style.position = 'absolute';
+            card.style.width = this.cardWidth + 'px';
+            card.style.height = this.cardHeight + 'px';
+            card.style.backgroundImage = `url('${this.gordiperroImage}')`;
+            card.style.backgroundSize = 'contain';
+            card.style.backgroundRepeat = 'no-repeat';
+            card.style.backgroundPosition = 'center';
+            card.style.borderRadius = '8px';
+            card.style.border = '2px solid #9146FF';
+            card.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+            
+            // Posición aleatoria
+            card.style.left = randomX + 'px';
+            card.style.top = randomY + 'px';
+            
+            // Rotación aleatoria para efecto más natural
+            const randomRotation = (Math.random() - 0.5) * 15; // -7.5 a 7.5 grados
+            card.style.transform = `rotate(${randomRotation}deg)`;
+            
+            // Opacidad inicial para animación
+            card.style.opacity = '0';
+            
+            // Índice z aleatorio para efecto de profundidad
+            card.style.zIndex = Math.floor(Math.random() * 1000);
+            
+            card.dataset.cardIndex = i;
+            
+            container.appendChild(card);
+        }
     },
     
-    // Aplicar animaciones a las pilas
-    applyStackAnimations(totalCount) {
-        const leftStacks = this.leftSide.querySelectorAll('.gordiperro-stack');
-        const rightStacks = this.rightSide.querySelectorAll('.gordiperro-stack');
+    // Aplicar animaciones aleatorias a todas las cartas
+    applyRandomAnimations() {
+        const allCards = document.querySelectorAll('.gordiperro-card-random');
         
-        const allStacks = Array.from(leftStacks).concat(Array.from(rightStacks));
-        const delayPerStack = Math.max(30, Math.floor(800 / (allStacks.length || 1)));
-        
-        allStacks.forEach((stackContainer, stackIndex) => {
+        allCards.forEach((card, index) => {
+            // Delay aleatorio para cada carta
+            const randomDelay = Math.random() * 800; // 0 a 800ms
+            
             setTimeout(() => {
-                // Animar entrada del contenedor de pila
-                stackContainer.style.animation = `stackFadeIn 0.5s ease-out forwards`;
-                stackContainer.style.opacity = '1';
-                
-                // Animar cada carta en la pila con delay
-                const cards = stackContainer.querySelectorAll('.gordiperro-card');
-                cards.forEach((card, cardIndex) => {
-                    setTimeout(() => {
-                        card.style.animation = `cardFadeIn 0.4s ease-out forwards`;
-                        card.style.opacity = '1';
-                    }, cardIndex * 50);
-                });
-            }, stackIndex * delayPerStack);
+                card.style.animation = `cardFadeInRandom 0.6s ease-out forwards`;
+                card.style.opacity = '1';
+            }, randomDelay);
         });
     },
     
@@ -146,8 +129,8 @@ const cardDistributor = {
     
     // Obtener número total de cartas
     getTotalCards() {
-        const leftCards = this.leftSide ? this.leftSide.querySelectorAll('.gordiperro-card').length : 0;
-        const rightCards = this.rightSide ? this.rightSide.querySelectorAll('.gordiperro-card').length : 0;
+        const leftCards = this.leftSide ? this.leftSide.querySelectorAll('.gordiperro-card-random').length : 0;
+        const rightCards = this.rightSide ? this.rightSide.querySelectorAll('.gordiperro-card-random').length : 0;
         return leftCards + rightCards;
     }
 };
