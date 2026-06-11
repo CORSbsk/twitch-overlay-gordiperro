@@ -52,6 +52,10 @@ const animationController = {
             centralAlert.classList.remove('entry-animation');
             centralAlert.classList.remove('active');
             
+            // Resetear estilos inline que puedan interferir
+            centralAlert.style.transform = '';
+            centralAlert.style.opacity = '';
+            
             // Forzar reflow para reiniciar animación
             void centralAlert.offsetWidth;
             
