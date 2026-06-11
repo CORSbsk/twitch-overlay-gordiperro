@@ -12,6 +12,7 @@ let config = {
 const configUI = {
     element: null,
     isVisible: false,
+    keyboardListenerAdded: false,
     
     init() {
         this.element = document.getElementById('config-ui');
@@ -30,7 +31,12 @@ const configUI = {
         } else {
             console.error('Elemento #config-ui no encontrado en el DOM');
         }
-        this.setupKeyboardListener();
+        
+        // Solo agregar el listener una vez
+        if (!this.keyboardListenerAdded) {
+            this.setupKeyboardListener();
+            this.keyboardListenerAdded = true;
+        }
     },
     
     populateUI() {
@@ -111,7 +117,7 @@ const configUI = {
         } else {
             console.error('Elemento config-ui no existe');
         }
-        this.isVisible = true;
+        // Estado ya se actualizó en toggle()
     },
     
     close() {
@@ -120,14 +126,17 @@ const configUI = {
             this.element.classList.remove('visible');
             console.log('Clase visible removida');
         }
-        this.isVisible = false;
+        // Estado ya se actualizó en toggle()
     },
     
     toggle() {
         console.log('Toggle llamado, isVisible:', this.isVisible);
+        // Actualizar estado ANTES de llamar a show/close
         if (this.isVisible) {
+            this.isVisible = false;
             this.close();
         } else {
+            this.isVisible = true;
             this.show();
         }
     },
@@ -164,20 +173,26 @@ const configUI = {
     },
     
     setupKeyboardListener() {
-        let isProcessing = false;
+        let lastKeyPressTime = 0;
+        const DEBOUNCE_TIME = 1000; // 1000ms de debounce (1 segundo)
         
         document.addEventListener('keydown', (e) => {
             // Shift+C para mostrar/ocultar configuración
-            if (e.shiftKey && e.key === 'C' && !isProcessing) {
-                e.preventDefault();
-                isProcessing = true;
-                console.log('Shift+C detectado');
-                this.toggle();
+            if (e.shiftKey && e.key === 'C') {
+                const currentTime = Date.now();
+                const timeSinceLastPress = currentTime - lastKeyPressTime;
                 
-                // Evitar múltiples disparos rápidos
-                setTimeout(() => {
-                    isProcessing = false;
-                }, 300);
+                console.log(`Shift+C presionado, tiempo desde último: ${timeSinceLastPress}ms`);
+                
+                // Solo procesar si ha pasado suficiente tiempo desde el último disparo
+                if (timeSinceLastPress > DEBOUNCE_TIME) {
+                    e.preventDefault();
+                    lastKeyPressTime = currentTime;
+                    console.log('Shift+C procesado (debounce pasado)');
+                    this.toggle();
+                } else {
+                    console.log('Shift+C ignorado (debounce activo)');
+                }
             }
         });
     },

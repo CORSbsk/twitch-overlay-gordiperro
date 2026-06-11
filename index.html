@@ -52,9 +52,6 @@
     <script src="js/alert-manager.js"></script>
     
     <script>
-        // Inicializar UI de configuración inmediatamente (antes de conectar con Twitch)
-        configUI.init();
-        
         // Iniciar carga de sonidos al cargar la página
         async function cargarRecursos() {
             const loadingBar = document.getElementById('loading-bar');
@@ -72,7 +69,7 @@
             };
             
             try {
-                // Inicializar alert manager
+                // Inicializar alert manager (esto también inicializa configUI)
                 await alertManager.init();
                 onProgress(20, 'Módulos inicializados');
                 
