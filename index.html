@@ -52,14 +52,11 @@
         // 3. CONEXIÓN CON TWITCH
         async function iniciarConexion() {
             // Obtener el ID del usuario
-            /* Test using real user id instead of this
             const userRes = await fetch('https://api.twitch.tv/helix/users', {
                 headers: { 'Authorization': `Bearer ${token}`, 'Client-Id': CLIENT_ID }
             });
             const userData = await userRes.json();
             const broadcasterId = userData.data[0].id;
-            */
-           const broadcasterId = '627063235'
 
             // Conectar al WebSocket
             const socket = new WebSocket('wss://eventsub.wss.twitch.tv/ws');
