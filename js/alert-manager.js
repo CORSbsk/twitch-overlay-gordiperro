@@ -50,18 +50,13 @@ const alertManager = {
     
     // Disparar animación
     triggerAnimation() {
-        if (this.state === 'animating') {
-            console.log('Animación en curso, se agregará a cola automáticamente');
-            return;
-        }
-        
-        this.state = 'animating';
-        console.log('Iniciando animación de alerta');
-        
-        // Iniciar secuencia de animación
+        // Siempre solicitar una secuencia al animationController; éste se encargará de encolarlas
+        console.log('Iniciando animación de alerta (o encolando si ya hay una en curso)');
+        // Notar: animationController internamente pone en cola si ya está animando
         animationController.startAnimationSequence(this.gordiperroCount);
-        
-        // Escuchar cuando termine la animación
+
+        // Mantener estado 'animating' mientras haya animaciones en curso
+        this.state = 'animating';
         const checkInterval = setInterval(() => {
             if (!animationController.getIsAnimating()) {
                 clearInterval(checkInterval);
