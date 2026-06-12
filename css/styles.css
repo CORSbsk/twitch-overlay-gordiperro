@@ -57,81 +57,102 @@ body {
     font-size: 14px;
 }
 
-/* UI de Configuración */
+/* UI de Configuración: modal que ocupa toda la ventana y escala su contenido para evitar scrolls */
 #config-ui {
     position: fixed;
-    top: 10px;
-    right: 10px;
-
-    width: min(450px, calc(100vw - 20px));
-
-    padding: 16px;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
     box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    z-index: 3000;
+    overflow: hidden;
+}
 
+#config-ui.visible {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.config-panel {
+    width: min(1000px, 94vw);
+    height: min(900px, 94vh);
     background: rgba(0, 0, 0, 0.95);
     border-radius: 10px;
     border: 2px solid #9146FF;
     box-shadow: 0 0 20px rgba(145, 70, 255, 0.5);
-
-    display: none;
-    z-index: 3000;
-
-    max-height: none;
-    overflow: visible;
+    padding: clamp(12px, 2.5vh, 24px);
+    box-sizing: border-box;
+    overflow: hidden; /* evitar scrolls */
+    display: flex;
+    flex-direction: column;
+    gap: clamp(8px, 1.6vh, 14px);
+    color: white;
+    font-size: clamp(13px, 1.6vh, 18px);
 }
 
-#config-ui.visible {
-    display: block !important;
+/* Contenedor escalable que adapta el contenido al tamaño del panel */
+.config-panel .scale-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
 }
 
-#config-ui h3 {
-    margin-top: 0;
+.config-panel .config-content {
+    width: 100%;
+    max-width: 720px;
+    box-sizing: border-box;
+    transform-origin: top left;
+}
+
+.config-panel h3 {
+    margin: 0 0 6px 0;
     color: #9146FF;
 }
 
-#config-ui label {
+.config-panel label {
     display: block;
-    margin: 10px 0 5px;
+    margin: 8px 0 4px;
     font-weight: bold;
 }
 
-#config-ui input {
+.config-panel input {
     box-sizing: border-box;
-    width: calc(100% - 8px);
-    padding: 8px;
-    margin-bottom: 10px;
+    width: 100%;
+    padding: 0.6em;
+    margin-bottom: 6px;
     border: 1px solid #9146FF;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
     color: white;
 }
 
-#config-ui button {
+.config-panel button {
     background: #9146FF;
     color: white;
-    padding: 10px 16px;
+    padding: 10px 12px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 0.95em;
     font-weight: bold;
     margin-right: 8px;
     margin-bottom: 8px;
 }
 
-#config-ui button:last-child {
-    margin-right: 0;
-}
+.config-panel button:hover { background: #7a35e0; }
 
-#config-ui button:hover {
-    background: #7a35e0;
-}
-
-#config-ui .info {
-    font-size: 12px;
-    color: #aaa;
-    margin-top: 10px;
-    line-height: 1.4;
+.config-panel .info {
+    font-size: 0.95em;
+    color: #ccc;
+    margin-top: 8px;
+    line-height: 1.35;
 }
 
 /* Setup UI inicial */

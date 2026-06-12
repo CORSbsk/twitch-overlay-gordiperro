@@ -48,39 +48,45 @@ const configUI = {
     populateUI() {
         console.log('Poblando UI de configuración...');
         this.element.innerHTML = `
-            <h3>Configuración del Overlay</h3>
-            <label for="reward-id">ID de Recompensa (UUID):</label>
-            <input type="text" id="reward-id" placeholder="Pega el UUID de la recompensa aquí">
-            
-            <label for="gordiperro-count">Contador de Gordiperros (manual):</label>
-            <input type="number" id="gordiperro-count" min="0" value="0">
+            <div class="config-panel">
+                <div class="scale-wrap">
+                    <div class="config-content">
+                        <h3>Configuración del Overlay</h3>
+                        <label for="reward-id">ID de Recompensa (UUID):</label>
+                        <input type="text" id="reward-id" placeholder="Pega el UUID de la recompensa aquí">
+                        
+                        <label for="gordiperro-count">Contador de Gordiperros (manual):</label>
+                        <input type="number" id="gordiperro-count" min="0" value="0">
 
-            <label for="gordiperro-min-offset">Dispersion vertical mínima (px):</label>
-            <input type="number" id="gordiperro-min-offset" min="0" value="14">
+                        <label for="gordiperro-min-offset">Dispersion vertical mínima (px):</label>
+                        <input type="number" id="gordiperro-min-offset" min="0" value="14">
 
-            <label for="gordiperro-max-offset">Dispersion vertical máxima (px):</label>
-            <input type="number" id="gordiperro-max-offset" min="0" value="26">
+                        <label for="gordiperro-max-offset">Dispersion vertical máxima (px):</label>
+                        <input type="number" id="gordiperro-max-offset" min="0" value="26">
 
-            <label for="gordiperro-card-width">Ancho de carta (px):</label>
-            <input type="number" id="gordiperro-card-width" min="10" value="80">
+                        <label for="gordiperro-card-width">Ancho de carta (px):</label>
+                        <input type="number" id="gordiperro-card-width" min="10" value="80">
 
-            <label for="gordiperro-card-height">Alto de carta (px):</label>
-            <input type="number" id="gordiperro-card-height" min="10" value="100">
+                        <label for="gordiperro-card-height">Alto de carta (px):</label>
+                        <input type="number" id="gordiperro-card-height" min="10" value="100">
 
-            <div style="margin-top:10px;">
-                <button id="btn-save">Guardar Configuración</button>
-                <button id="btn-test-alert">Probar alerta</button>
-                <button id="btn-reset">Resetear sistema</button>
-                <button id="btn-close">Cerrar</button>
-            </div>
-            
-            <div class="info">
-                <p><strong>Instrucciones:</strong></p>
-                <p>1. Presiona Shift+C para mostrar/ocultar este panel</p>
-                <p>2. Canjea la recompensa deseada en el chat</p>
-                <p>3. Revisa la consola del navegador (F12) para ver el UUID</p>
-                <p>4. Copia el UUID y pégalo aquí</p>
-                <p>5. Puedes ajustar manualmente el contador si es necesario</p>
+                        <div style="margin-top:10px;">
+                            <button id="btn-save">Guardar Configuración</button>
+                            <button id="btn-test-alert">Probar alerta</button>
+                            <button id="btn-reset">Resetear sistema</button>
+                            <button id="btn-close">Cerrar</button>
+                        </div>
+                        
+                        <div class="info">
+                            <p><strong>Instrucciones:</strong></p>
+                            <p>1. Presiona Shift+C para mostrar/ocultar este panel</p>
+                            <p>2. Canjea la recompensa deseada en el chat</p>
+                            <p>3. Revisa la consola del navegador (F12) para ver el UUID</p>
+                            <p>4. Copia el UUID y pégalo aquí</p>
+                            <p>5. Puedes ajustar manualmente el contador si es necesario</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
         
@@ -153,10 +159,11 @@ const configUI = {
                 console.log('Elemento vacío, poblando...');
                 this.populateUI();
             }
-            
             this.element.classList.add('visible');
             console.log('Clase visible agregada');
             console.log('Estilo display:', window.getComputedStyle(this.element).display);
+            // Ajustar escala para que todo quepa sin scroll
+            setTimeout(() => this.adjustScale(), 40);
             
             // Cargar valores actuales
             const rewardIdInput = document.getElementById('reward-id');
@@ -207,6 +214,32 @@ const configUI = {
             console.error('Elemento config-ui no existe');
         }
         // Estado ya se actualizó en toggle()
+    },
+
+    adjustScale() {
+        try {
+            const panel = this.element.querySelector('.config-panel');
+            const content = this.element.querySelector('.config-content');
+            const wrap = this.element.querySelector('.scale-wrap');
+            if (!panel || !content || !wrap) return;
+
+            // Forzar layout then medir
+            content.style.transform = 'none';
+            requestAnimationFrame(() => {
+                const panelRect = panel.getBoundingClientRect();
+                const contentRect = content.getBoundingClientRect();
+
+                const scaleW = panelRect.width / contentRect.width;
+                const scaleH = panelRect.height / contentRect.height;
+                const scale = Math.min(scaleW, scaleH, 1);
+
+                content.style.transform = `scale(${scale})`;
+                // ajustar el alto del wrapper para mantener el contenido visible
+                wrap.style.height = (contentRect.height * scale) + 'px';
+            });
+        } catch (e) {
+            console.error('Error en adjustScale:', e);
+        }
     },
     
     close() {
@@ -303,6 +336,12 @@ const configUI = {
                 } else {
                     console.log('Shift+C ignorado (debounce activo)');
                 }
+            }
+        });
+        // Recalcular escala al redimensionar la ventana cuando el panel está visible
+        window.addEventListener('resize', () => {
+            if (this.isVisible) {
+                this.adjustScale();
             }
         });
     },
