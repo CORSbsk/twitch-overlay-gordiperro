@@ -2,11 +2,17 @@
 const CLIENT_ID = 'wzrtlpnuuigex61t9ymc4np9subyur';
 const REDIRECT_URI = window.location.href.split('#')[0];
 
-// Estado de configuración
-let config = {
-    rewardId: '', // Placeholder para el ID de la recompensa específica
-    gordiperroCount: 0 // Contador histórico de gordiperros
+const defaultConfig = {
+    rewardId: '',
+    gordiperroCount: 0,
+    gordiperroMinOffset: 14,
+    gordiperroMaxOffset: 26,
+    gordiperroCardWidth: 80,
+    gordiperroCardHeight: 100
 };
+
+// Estado de configuración
+let config = { ...defaultConfig };
 
 // UI de configuración
 const configUI = {
@@ -48,7 +54,19 @@ const configUI = {
             
             <label for="gordiperro-count">Contador de Gordiperros (manual):</label>
             <input type="number" id="gordiperro-count" min="0" value="0">
-            
+
+            <label for="gordiperro-min-offset">Dispersion vertical mínima (px):</label>
+            <input type="number" id="gordiperro-min-offset" min="0" value="14">
+
+            <label for="gordiperro-max-offset">Dispersion vertical máxima (px):</label>
+            <input type="number" id="gordiperro-max-offset" min="0" value="26">
+
+            <label for="gordiperro-card-width">Ancho de carta (px):</label>
+            <input type="number" id="gordiperro-card-width" min="10" value="80">
+
+            <label for="gordiperro-card-height">Alto de carta (px):</label>
+            <input type="number" id="gordiperro-card-height" min="10" value="100">
+
             <div style="margin-top:10px;">
                 <button id="btn-save">Guardar Configuración</button>
                 <button id="btn-test-alert">Probar alerta</button>
@@ -107,8 +125,14 @@ const configUI = {
                 if (typeof alertManager !== 'undefined' && typeof alertManager.reset === 'function') {
                     alertManager.reset();
                 }
-                // Repoblar UI con valores por defecto
-                this.loadConfig();
+                config = { ...defaultConfig };
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.removeItem('twitchOverlayConfig');
+                    localStorage.removeItem('twitchOverlayCount');
+                }
+                if (typeof cardDistributor !== 'undefined' && typeof cardDistributor.applyConfig === 'function') {
+                    cardDistributor.applyConfig();
+                }
                 this.show();
                 console.log('Sistema reseteado por usuario');
             });
@@ -137,6 +161,10 @@ const configUI = {
             // Cargar valores actuales
             const rewardIdInput = document.getElementById('reward-id');
             const countInput = document.getElementById('gordiperro-count');
+            const minOffsetInput = document.getElementById('gordiperro-min-offset');
+            const maxOffsetInput = document.getElementById('gordiperro-max-offset');
+            const cardWidthInput = document.getElementById('gordiperro-card-width');
+            const cardHeightInput = document.getElementById('gordiperro-card-height');
             
             if (rewardIdInput) {
                 rewardIdInput.value = config.rewardId || '';
@@ -150,6 +178,30 @@ const configUI = {
                 console.log('Valor de gordiperro-count cargado:', config.gordiperroCount);
             } else {
                 console.error('Elemento gordiperro-count no encontrado');
+            }
+
+            if (minOffsetInput) {
+                minOffsetInput.value = config.gordiperroMinOffset || 14;
+            } else {
+                console.error('Elemento gordiperro-min-offset no encontrado');
+            }
+
+            if (maxOffsetInput) {
+                maxOffsetInput.value = config.gordiperroMaxOffset || 26;
+            } else {
+                console.error('Elemento gordiperro-max-offset no encontrado');
+            }
+
+            if (cardWidthInput) {
+                cardWidthInput.value = config.gordiperroCardWidth || 80;
+            } else {
+                console.error('Elemento gordiperro-card-width no encontrado');
+            }
+
+            if (cardHeightInput) {
+                cardHeightInput.value = config.gordiperroCardHeight || 100;
+            } else {
+                console.error('Elemento gordiperro-card-height no encontrado');
             }
         } else {
             console.error('Elemento config-ui no existe');
@@ -181,14 +233,27 @@ const configUI = {
     saveConfig() {
         const rewardIdInput = document.getElementById('reward-id').value.trim();
         const countInput = parseInt(document.getElementById('gordiperro-count').value) || 0;
-        
+        const minOffsetInput = parseInt(document.getElementById('gordiperro-min-offset').value) || 14;
+        const maxOffsetInput = parseInt(document.getElementById('gordiperro-max-offset').value) || 26;
+        const cardWidthInput = parseInt(document.getElementById('gordiperro-card-width').value) || 80;
+        const cardHeightInput = parseInt(document.getElementById('gordiperro-card-height').value) || 100;
+
         config.rewardId = rewardIdInput;
         config.gordiperroCount = countInput;
-        
+        config.gordiperroMinOffset = Math.min(minOffsetInput, maxOffsetInput);
+        config.gordiperroMaxOffset = Math.max(minOffsetInput, maxOffsetInput);
+        config.gordiperroCardWidth = Math.max(10, cardWidthInput);
+        config.gordiperroCardHeight = Math.max(10, cardHeightInput);
+
         // Guardar en localStorage
         if (typeof Storage !== 'undefined') {
             localStorage.setItem('twitchOverlayConfig', JSON.stringify(config));
         }
+
+        if (typeof cardDistributor !== 'undefined' && typeof cardDistributor.applyConfig === 'function') {
+            cardDistributor.applyConfig();
+        }
+
         // Guardar contador en storage y aplicar al sistema inmediatamente
         if (typeof storage !== 'undefined' && typeof storage.setCount === 'function') {
             storage.setCount(countInput);

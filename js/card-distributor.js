@@ -8,8 +8,11 @@ const cardDistributor = {
     rightStacks: [],
     cardWidth: 80,
     cardHeight: 100,
-    minOffset: 8,
-    maxOffset: 15,
+
+    // Distancia vertical entre cartas en una pila (con algo de aleatoriedad)
+    minOffset: 14,
+    maxOffset: 26,
+
     stackSpacing: 18,
     sidePadding: 20,
     sideHeight: 0,
@@ -20,6 +23,9 @@ const cardDistributor = {
         this.rightSide = document.getElementById('right-side');
         this.updateSideHeight();
         window.addEventListener('resize', () => this.updateSideHeight());
+        if (typeof config !== 'undefined' && typeof this.applyConfig === 'function') {
+            this.applyConfig();
+        }
         console.log('CardDistributor inicializado');
     },
 
@@ -108,6 +114,22 @@ const cardDistributor = {
         card.style.transform = `rotate(${Math.random() * 14 - 7}deg)`;
         card.style.opacity = '0';
         return card;
+    },
+
+    applyConfig() {
+        if (typeof config === 'undefined') {
+            return;
+        }
+
+        this.cardWidth = Math.max(10, config.gordiperroCardWidth || this.cardWidth);
+        this.cardHeight = Math.max(10, config.gordiperroCardHeight || this.cardHeight);
+        this.minOffset = Math.max(0, Math.min(config.gordiperroMinOffset || this.minOffset, config.gordiperroMaxOffset || this.maxOffset));
+        this.maxOffset = Math.max(this.minOffset, config.gordiperroMaxOffset || this.maxOffset);
+
+        // Ajustar el ancho de las pilas existentes si ya existieran
+        [...this.leftStacks, ...this.rightStacks].forEach((stackInfo) => {
+            stackInfo.element.style.width = `${this.cardWidth}px`;
+        });
     },
 
     appendCardToStack(stack, offset = null) {
