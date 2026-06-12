@@ -62,15 +62,18 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    padding: 20px;
+    bottom: 20px;
+    width: min(380px, calc(100vw - 40px));
+    max-height: calc(100vh - 40px);
+    padding: 18px;
     background: rgba(0, 0, 0, 0.95);
     border-radius: 10px;
     display: none;
     z-index: 3000;
-    min-width: 300px;
     color: white;
     border: 2px solid #9146FF;
     box-shadow: 0 0 20px rgba(145, 70, 255, 0.5);
+    overflow: auto;
 }
 
 #config-ui.visible {
@@ -101,13 +104,18 @@ body {
 #config-ui button {
     background: #9146FF;
     color: white;
-    padding: 10px 20px;
+    padding: 10px 16px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
-    margin-right: 10px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+#config-ui button:last-child {
+    margin-right: 0;
 }
 
 #config-ui button:hover {
