@@ -51,13 +51,13 @@ const animationController = {
             // Reiniciar estado de elementos y estilos inline para asegurar reinicio
             centralAlert.classList.remove('entry-animation');
             centralAlert.classList.remove('active');
-            centralAlert.style.animation = 'none';
+            centralAlert.style.animation = '';
             centralAlert.style.transform = '';
             centralAlert.style.opacity = '';
 
             const centralImage = document.getElementById('central-image');
             if (centralImage) {
-                centralImage.style.animation = 'none';
+                centralImage.style.animation = '';
             }
 
             // Forzar reflow para reiniciar animación CSS
@@ -80,9 +80,9 @@ const animationController = {
             setTimeout(() => {
                 centralAlert.classList.remove('entry-animation');
                 // Limpiar inline animation para que pueda reiniciarse
-                centralAlert.style.animation = 'none';
+                centralAlert.style.animation = '';
                 if (centralImage) {
-                    centralImage.style.animation = 'none';
+                    centralImage.style.animation = '';
                 }
                 resolve();
             }, 5000);
