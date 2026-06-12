@@ -48,33 +48,42 @@ const animationController = {
         return new Promise((resolve) => {
             const centralAlert = document.getElementById('central-alert');
             
-            // Reiniciar estado de elementos
+            // Reiniciar estado de elementos y estilos inline para asegurar reinicio
             centralAlert.classList.remove('entry-animation');
             centralAlert.classList.remove('active');
-            
-            // Resetear estilos inline que puedan interferir
+            centralAlert.style.animation = 'none';
             centralAlert.style.transform = '';
             centralAlert.style.opacity = '';
-            
-            // Forzar reflow para reiniciar animación
+
+            const centralImage = document.getElementById('central-image');
+            if (centralImage) {
+                centralImage.style.animation = 'none';
+            }
+
+            // Forzar reflow para reiniciar animación CSS
             void centralAlert.offsetWidth;
-            
+
             // Ocultar multiplicador durante entrada
             const multiplier = document.getElementById('multiplier');
             if (multiplier) {
                 multiplier.style.display = 'none';
             }
-            
-            // Iniciar animación
+
+            // Iniciar animación (clases CSS)
             centralAlert.classList.add('entry-animation');
             centralAlert.classList.add('active');
             
             // Reproducir música de alerta
             soundManager.playAlertMusic();
             
-            // Esperar 5 segundos (duración de la música)
+            // Esperar 5 segundos (duración de la música) y limpiar para futuras ejecuciones
             setTimeout(() => {
                 centralAlert.classList.remove('entry-animation');
+                // Limpiar inline animation para que pueda reiniciarse
+                centralAlert.style.animation = 'none';
+                if (centralImage) {
+                    centralImage.style.animation = 'none';
+                }
                 resolve();
             }, 5000);
         });

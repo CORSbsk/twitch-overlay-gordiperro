@@ -49,9 +49,12 @@ const configUI = {
             <label for="gordiperro-count">Contador de Gordiperros (manual):</label>
             <input type="number" id="gordiperro-count" min="0" value="0">
             
-            <button id="btn-save">Guardar Configuración</button>
-            <button id="btn-test-alert">Probar alerta</button>
-            <button id="btn-close">Cerrar</button>
+            <div style="margin-top:10px;">
+                <button id="btn-save">Guardar Configuración</button>
+                <button id="btn-test-alert">Probar alerta</button>
+                <button id="btn-reset">Resetear sistema</button>
+                <button id="btn-close">Cerrar</button>
+            </div>
             
             <div class="info">
                 <p><strong>Instrucciones:</strong></p>
@@ -73,7 +76,7 @@ const configUI = {
         } else {
             console.error('btn-save no encontrado');
         }
-        
+
         if (btnClose) {
             btnClose.addEventListener('click', () => this.close());
             console.log('Event listener agregado a btn-close');
@@ -93,6 +96,25 @@ const configUI = {
             console.log('Event listener agregado a btn-test-alert');
         } else {
             console.error('btn-test-alert no encontrado');
+        }
+
+        const btnReset = document.getElementById('btn-reset');
+        if (btnReset) {
+            btnReset.addEventListener('click', () => {
+                if (typeof storage !== 'undefined') {
+                    storage.clearAll();
+                }
+                if (typeof alertManager !== 'undefined' && typeof alertManager.reset === 'function') {
+                    alertManager.reset();
+                }
+                // Repoblar UI con valores por defecto
+                this.loadConfig();
+                this.show();
+                console.log('Sistema reseteado por usuario');
+            });
+            console.log('Event listener agregado a btn-reset');
+        } else {
+            console.error('btn-reset no encontrado');
         }
     },
     
@@ -167,7 +189,15 @@ const configUI = {
         if (typeof Storage !== 'undefined') {
             localStorage.setItem('twitchOverlayConfig', JSON.stringify(config));
         }
-        
+        // Guardar contador en storage y aplicar al sistema inmediatamente
+        if (typeof storage !== 'undefined' && typeof storage.setCount === 'function') {
+            storage.setCount(countInput);
+        }
+
+        if (typeof alertManager !== 'undefined' && typeof alertManager.setCount === 'function') {
+            alertManager.setCount(countInput);
+        }
+
         console.log('Configuración guardada:', config);
         alert('Configuración guardada correctamente');
     },
