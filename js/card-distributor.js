@@ -66,7 +66,7 @@ const cardDistributor = {
     },
 
     willOverflow(stack) {
-        const projectedHeight = this.cardHeight + stack.cardCount * this.minOffset;
+        const projectedHeight = this.cardHeight + stack.cardCount * this.maxOffset;
         return projectedHeight + this.sidePadding > this.sideHeight;
     },
 
