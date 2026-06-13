@@ -14,6 +14,11 @@ const cardDistributor = {
     maxOffset: 26,
 
     stackSpacing: 18,
+    // Número máximo de columnas por cada lateral (configurable)
+    maxColumnsPerSide: 3,
+    // Punteros para distribución circular cuando se alcanza el máximo
+    nextColumnIndexLeft: 0,
+    nextColumnIndexRight: 0,
     sidePadding: 20,
     sideHeight: 0,
 
@@ -58,18 +63,42 @@ const cardDistributor = {
         }
 
         const currentStack = stacks[stacks.length - 1];
-        if (this.willOverflow(currentStack)) {
+
+        // Si la pila actual aún puede aceptar otra carta, usarla.
+        if (!this.willOverflow(currentStack)) {
+            return currentStack;
+        }
+
+        // Si aún no alcanzamos el número máximo de columnas, crear una nueva.
+        if (stacks.length < this.maxColumnsPerSide) {
             return this.createStack(side, stacks.length);
         }
 
-        return currentStack;
+        // Si ya alcanzamos el máximo, distribuir circularmente entre las columnas existentes.
+        const pointerKey = side === 'left' ? 'nextColumnIndexLeft' : 'nextColumnIndexRight';
+        const idx = this[pointerKey] % this.maxColumnsPerSide;
+        this[pointerKey] = (this[pointerKey] + 1) % this.maxColumnsPerSide;
+
+        return stacks[idx];
     },
 
     willOverflow(stack) {
-        // Comprobar si incluso usando el offset mínimo no cabe la siguiente carta.
-        // Usamos stack.cardCount + 1 porque queremos saber si la SIGUIENTE carta entraría.
-        const projectedWithMin = this.cardHeight + (stack.cardCount + 1) * this.minOffset;
-        return projectedWithMin + this.sidePadding > this.sideHeight;
+        // Evaluar el espacio restante usando el peor caso para las cartas actuales.
+        const projectedHeight = this.cardHeight + stack.cardCount * this.maxOffset;
+        const remaining = this.sideHeight - projectedHeight - this.sidePadding;
+
+        // Si queda espacio suficiente para un offset máximo, no hay overflow.
+        if (remaining >= this.maxOffset) {
+            return false;
+        }
+
+        // Si queda menos que el offset mínimo, entonces no cabe la siguiente carta.
+        if (remaining < this.minOffset) {
+            return true;
+        }
+
+        // Si queda entre min y max, permitimos una última carta ajustando su offset.
+        return false;
     },
 
     createStack(side, index) {
@@ -127,6 +156,7 @@ const cardDistributor = {
         this.cardHeight = Math.max(10, config.gordiperroCardHeight || this.cardHeight);
         this.minOffset = Math.max(0, Math.min(config.gordiperroMinOffset || this.minOffset, config.gordiperroMaxOffset || this.maxOffset));
         this.maxOffset = Math.max(this.minOffset, config.gordiperroMaxOffset || this.maxOffset);
+        this.maxColumnsPerSide = Math.max(1, config.gordiperroMaxColumnsPerSide || this.maxColumnsPerSide);
 
         // Ajustar el ancho de las pilas existentes si ya existieran
         [...this.leftStacks, ...this.rightStacks].forEach((stackInfo) => {
@@ -138,7 +168,8 @@ const cardDistributor = {
         const card = this.createCard();
 
         // Si no se pasa offset, calcular el mejor offset posible para que
-        // la pila aproveche el espacio restante (dentro de min/max).
+        // la pila aproveche el espacio restante (dentro de min/max). Solo
+        // la última carta puede ser ajustada para rellenar el hueco.
         const cardOffset = offset !== null ? offset : this.calculateBestOffset(stack);
 
         card.style.bottom = `${stack.cardCount * cardOffset}px`;
@@ -159,14 +190,24 @@ const cardDistributor = {
     },
 
     // Calcula el mejor offset posible para la siguiente carta en la pila
-    // intentando distribuir las cartas en el espacio disponible.
+    // intentando encajar la siguiente carta sin comprimir toda la pila.
     calculateBestOffset(stack) {
-        const remainingSpace = this.sideHeight - this.sidePadding - this.cardHeight;
-        const requiredCards = stack.cardCount + 1; // incluimos la siguiente carta
-        const idealOffset = remainingSpace / requiredCards;
+        // Usamos la proyección conservadora basada en maxOffset para las cartas existentes.
+        const projectedHeight = this.cardHeight + stack.cardCount * this.maxOffset;
+        const remaining = this.sideHeight - projectedHeight - this.sidePadding;
 
-        // Clamp al rango [minOffset, maxOffset]
-        return Math.max(this.minOffset, Math.min(this.maxOffset, idealOffset));
+        // Caso normal: queda espacio suficiente para un offset máximo -> usar offset aleatorio.
+        if (remaining >= this.maxOffset) {
+            return this.randomOffset();
+        }
+
+        // Si no hay suficiente espacio ni para el mínimo, devolvemos minOffset (willOverflow debe haber evitado esto).
+        if (remaining < this.minOffset) {
+            return this.minOffset;
+        }
+
+        // Si queda entre min y max, usar exactamente el espacio restante para ajustar la última carta.
+        return Math.floor(remaining);
     },
 
     addCardAnimated() {
@@ -228,6 +269,9 @@ const cardDistributor = {
         }
         this.leftStacks = [];
         this.rightStacks = [];
+        // Reiniciar punteros de distribución circular
+        this.nextColumnIndexLeft = 0;
+        this.nextColumnIndexRight = 0;
     },
 
     getTotalCards() {
