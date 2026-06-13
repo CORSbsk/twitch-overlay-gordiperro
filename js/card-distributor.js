@@ -56,7 +56,7 @@ const cardDistributor = {
 
     getActiveStack(side, stacks) {
         if (stacks.length === 0) {
-            return this.createStack(side, 0);
+            return this.createStack(side, 0, 0);
         }
 
         const currentStack = stacks[stacks.length - 1];
@@ -66,39 +66,16 @@ const cardDistributor = {
             return currentStack;
         }
 
-        // Si aún no alcanzamos el número máximo de columnas, crear una nueva.
-        if (stacks.length < this.maxColumnsPerSide) {
-            return this.createStack(side, stacks.length);
+        const currentLayer = Math.floor((stacks.length - 1) / this.maxColumnsPerSide);
+        const currentColumnsInLayer = stacks.length - currentLayer * this.maxColumnsPerSide;
+
+        // Si aún no alcanzamos el número máximo de columnas en la capa actual, crear una nueva columna.
+        if (currentColumnsInLayer < this.maxColumnsPerSide) {
+            return this.createStack(side, currentLayer, currentColumnsInLayer);
         }
 
-        // Si llegamos al máximo, usar la columna más baja actual.
-        return this.getLowestStack(stacks);
-    },
-
-    getLowestStack(stacks) {
-        let lowestStack = stacks[0];
-        let lowestHeight = this.estimateStackHeight(lowestStack);
-
-        for (let i = 1; i < stacks.length; i += 1) {
-            const height = this.estimateStackHeight(stacks[i]);
-            if (height < lowestHeight) {
-                lowestHeight = height;
-                lowestStack = stacks[i];
-            }
-        }
-
-        return lowestStack;
-    },
-
-    estimateStackHeight(stack) {
-        const cards = stack.element.children;
-        if (cards.length === 0) {
-            return 0;
-        }
-
-        const lastCard = cards[cards.length - 1];
-        const bottom = parseFloat(lastCard.style.bottom) || 0;
-        return bottom + this.cardHeight;
+        // Si la capa actual está completa, iniciar una nueva capa de columnas encima.
+        return this.createStack(side, currentLayer + 1, 0);
     },
 
     willOverflow(stack) {
@@ -120,7 +97,7 @@ const cardDistributor = {
         return false;
     },
 
-    createStack(side, index) {
+    createStack(side, layer, columnIndex) {
         const stack = document.createElement('div');
         stack.className = 'pile-stack';
         stack.style.position = 'absolute';
@@ -129,14 +106,15 @@ const cardDistributor = {
         stack.style.height = 'calc(100% - 20px)';
         stack.style.pointerEvents = 'none';
 
-        const offset = index * this.stackSpacing + (Math.random() * 8 - 4);
+        const offset = columnIndex * this.stackSpacing + (Math.random() * 8 - 4);
         if (side === 'left') {
             stack.style.left = `${Math.max(10, offset)}px`;
         } else {
             stack.style.right = `${Math.max(10, offset)}px`;
         }
 
-        stack.style.zIndex = 100 + index;
+        // Cada nueva capa se muestra encima de la anterior.
+        stack.style.zIndex = 100 + layer * 100 + columnIndex;
         const stackInfo = {
             element: stack,
             cardCount: 0
@@ -289,9 +267,6 @@ const cardDistributor = {
         }
         this.leftStacks = [];
         this.rightStacks = [];
-        // Reiniciar punteros de distribución circular
-        this.nextColumnIndexLeft = 0;
-        this.nextColumnIndexRight = 0;
     },
 
     getTotalCards() {
