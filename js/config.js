@@ -10,6 +10,12 @@ const defaultConfig = {
     gordiperroCardWidth: 80,
     gordiperroCardHeight: 100
 };
+// Añadir valores por defecto para columnas y sonido
+defaultConfig.gordiperroMaxColumnsPerSide = 5;
+defaultConfig.soundCurrentPitch = 1.0;
+defaultConfig.soundPitchIncrement = 0.02;
+defaultConfig.alertMusicVolume = 0.5;
+defaultConfig.barfVolume = 0.7;
 
 // Estado de configuración
 let config = { ...defaultConfig };
@@ -69,6 +75,22 @@ const configUI = {
 
                         <label for="gordiperro-card-height">Alto de carta (px):</label>
                         <input type="number" id="gordiperro-card-height" min="10" value="100">
+
+                        <label for="gordiperro-max-columns">Columnas máximas por lateral:</label>
+                        <input type="number" id="gordiperro-max-columns" min="1" value="5">
+
+                        <h3>Configuración de Sonido</h3>
+                        <label for="sound-current-pitch">Pitch inicial (barf):</label>
+                        <input type="number" id="sound-current-pitch" step="0.01" value="1.00">
+
+                        <label for="sound-pitch-increment">Incremento de pitch (por reproducción):</label>
+                        <input type="number" id="sound-pitch-increment" step="0.001" value="0.02">
+
+                        <label for="alert-music-volume">Volumen música alerta (0.0 - 1.0):</label>
+                        <input type="number" id="alert-music-volume" step="0.01" min="0" max="1" value="0.5">
+
+                        <label for="barf-volume">Volumen barf (0.0 - 1.0):</label>
+                        <input type="number" id="barf-volume" step="0.01" min="0" max="1" value="0.7">
 
                         <div style="margin-top:10px;">
                             <button id="btn-save">Guardar Configuración</button>
@@ -172,6 +194,11 @@ const configUI = {
             const maxOffsetInput = document.getElementById('gordiperro-max-offset');
             const cardWidthInput = document.getElementById('gordiperro-card-width');
             const cardHeightInput = document.getElementById('gordiperro-card-height');
+            const maxColumnsInput = document.getElementById('gordiperro-max-columns');
+            const soundPitchInput = document.getElementById('sound-current-pitch');
+            const soundPitchIncInput = document.getElementById('sound-pitch-increment');
+            const alertMusicVolInput = document.getElementById('alert-music-volume');
+            const barfVolInput = document.getElementById('barf-volume');
             
             if (rewardIdInput) {
                 rewardIdInput.value = config.rewardId || '';
@@ -209,6 +236,28 @@ const configUI = {
                 cardHeightInput.value = config.gordiperroCardHeight || 100;
             } else {
                 console.error('Elemento gordiperro-card-height no encontrado');
+            }
+
+            if (maxColumnsInput) {
+                maxColumnsInput.value = config.gordiperroMaxColumnsPerSide || 5;
+            } else {
+                console.error('Elemento gordiperro-max-columns no encontrado');
+            }
+
+            if (soundPitchInput) {
+                soundPitchInput.value = typeof config.soundCurrentPitch === 'number' ? config.soundCurrentPitch : 1.0;
+            }
+
+            if (soundPitchIncInput) {
+                soundPitchIncInput.value = typeof config.soundPitchIncrement === 'number' ? config.soundPitchIncrement : 0.02;
+            }
+
+            if (alertMusicVolInput) {
+                alertMusicVolInput.value = typeof config.alertMusicVolume === 'number' ? config.alertMusicVolume : 0.5;
+            }
+
+            if (barfVolInput) {
+                barfVolInput.value = typeof config.barfVolume === 'number' ? config.barfVolume : 0.7;
             }
         } else {
             console.error('Elemento config-ui no existe');
@@ -277,6 +326,18 @@ const configUI = {
         config.gordiperroMaxOffset = Math.max(minOffsetInput, maxOffsetInput);
         config.gordiperroCardWidth = Math.max(10, cardWidthInput);
         config.gordiperroCardHeight = Math.max(10, cardHeightInput);
+        // Nuevos valores: columnas y sonido
+        const maxColumnsInputVal = parseInt(document.getElementById('gordiperro-max-columns').value) || 5;
+        const soundPitchVal = parseFloat(document.getElementById('sound-current-pitch').value) || 1.0;
+        const soundPitchIncVal = parseFloat(document.getElementById('sound-pitch-increment').value) || 0.02;
+        const alertMusicVolVal = parseFloat(document.getElementById('alert-music-volume').value);
+        const barfVolVal = parseFloat(document.getElementById('barf-volume').value);
+
+        config.gordiperroMaxColumnsPerSide = Math.max(1, maxColumnsInputVal);
+        config.soundCurrentPitch = isNaN(soundPitchVal) ? 1.0 : soundPitchVal;
+        config.soundPitchIncrement = isNaN(soundPitchIncVal) ? 0.02 : soundPitchIncVal;
+        config.alertMusicVolume = isNaN(alertMusicVolVal) ? 0.5 : Math.min(Math.max(alertMusicVolVal, 0), 1);
+        config.barfVolume = isNaN(barfVolVal) ? 0.7 : Math.min(Math.max(barfVolVal, 0), 1);
 
         // Guardar en localStorage
         if (typeof Storage !== 'undefined') {
@@ -285,6 +346,11 @@ const configUI = {
 
         if (typeof cardDistributor !== 'undefined' && typeof cardDistributor.applyConfig === 'function') {
             cardDistributor.applyConfig();
+        }
+
+        // Aplicar configuración de sonido si está disponible
+        if (typeof soundManager !== 'undefined' && typeof soundManager.applyConfig === 'function') {
+            soundManager.applyConfig();
         }
 
         // Guardar contador en storage y aplicar al sistema inmediatamente

@@ -6,6 +6,8 @@ const soundManager = {
     barfBuffer: null,
     currentPitch: 1.0,
     pitchIncrement: 0.02, // 2% incremento
+    alertMusicVolume: 0.5,
+    barfVolume: 0.7,
     isLoading: false,
     onProgress: null,
     
@@ -24,6 +26,11 @@ const soundManager = {
             
             // Cargar archivos de sonido
             await this.loadSounds();
+
+            // Aplicar configuración si existe
+            if (typeof this.applyConfig === 'function') {
+                this.applyConfig();
+            }
             
             this.isLoading = false;
             if (this.onProgress) {
@@ -102,7 +109,7 @@ const soundManager = {
         source.buffer = this.alertMusicBuffer;
         
         const gainNode = this.audioContext.createGain();
-        gainNode.gain.value = 0.5; // Volumen al 50%
+        gainNode.gain.value = typeof this.alertMusicVolume === 'number' ? this.alertMusicVolume : 0.5;
         
         source.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
@@ -133,7 +140,7 @@ const soundManager = {
         source.playbackRate.value = pitch;
         
         const gainNode = this.audioContext.createGain();
-        gainNode.gain.value = 0.7; // Volumen al 70%
+        gainNode.gain.value = typeof this.barfVolume === 'number' ? this.barfVolume : 0.7;
         
         source.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
@@ -148,7 +155,7 @@ const soundManager = {
     playBarfWithIncrement() {
         const pitch = this.currentPitch;
         this.playBarf(pitch);
-        
+
         // Incrementar pitch para la próxima vez
         this.currentPitch += this.pitchIncrement;
         console.log(`Pitch incrementado a: ${this.currentPitch.toFixed(2)}`);
@@ -168,6 +175,28 @@ const soundManager = {
     // Establecer pitch manualmente
     setPitch(pitch) {
         this.currentPitch = pitch;
+    },
+
+    setPitchIncrement(inc) {
+        this.pitchIncrement = inc;
+    },
+
+    setAlertMusicVolume(v) {
+        this.alertMusicVolume = Math.min(Math.max(v, 0), 1);
+    },
+
+    setBarfVolume(v) {
+        this.barfVolume = Math.min(Math.max(v, 0), 1);
+    },
+
+    // Aplicar configuración global si está disponible
+    applyConfig() {
+        if (typeof config === 'undefined') return;
+        if (typeof config.soundCurrentPitch === 'number') this.currentPitch = config.soundCurrentPitch;
+        if (typeof config.soundPitchIncrement === 'number') this.pitchIncrement = config.soundPitchIncrement;
+        if (typeof config.alertMusicVolume === 'number') this.alertMusicVolume = config.alertMusicVolume;
+        if (typeof config.barfVolume === 'number') this.barfVolume = config.barfVolume;
+        console.log('soundManager: configuración aplicada desde config');
     },
     
     // Detener todos los sonidos
