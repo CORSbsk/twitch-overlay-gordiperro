@@ -57,48 +57,61 @@ const configUI = {
             <div class="config-panel">
                 <div class="scale-wrap">
                     <div class="config-content">
-                        <h3>Configuración del Overlay</h3>
-                        <label for="reward-id">ID de Recompensa (UUID):</label>
-                        <input type="text" id="reward-id" placeholder="Pega el UUID de la recompensa aquí">
-                        
-                        <label for="gordiperro-count">Contador de Gordiperros (manual):</label>
-                        <input type="number" id="gordiperro-count" min="0" value="0">
+                        <h3>Configuración</h3>
 
-                        <label for="gordiperro-min-offset">Dispersion vertical mínima (px):</label>
-                        <input type="number" id="gordiperro-min-offset" min="0" value="14">
+                        <div class="config-tabs">
+                            <div class="tab-headers">
+                                <button class="tab-btn active" data-tab="tab-overlay">Overlay</button>
+                                <button class="tab-btn" data-tab="tab-sound">Sonido</button>
+                            </div>
 
-                        <label for="gordiperro-max-offset">Dispersion vertical máxima (px):</label>
-                        <input type="number" id="gordiperro-max-offset" min="0" value="26">
+                            <div class="tab-contents">
+                                <div id="tab-overlay" class="tab">
+                                    <label for="reward-id">ID de Recompensa (UUID):</label>
+                                    <input type="text" id="reward-id" placeholder="Pega el UUID de la recompensa aquí">
 
-                        <label for="gordiperro-card-width">Ancho de carta (px):</label>
-                        <input type="number" id="gordiperro-card-width" min="10" value="80">
+                                    <label for="gordiperro-count">Contador de Gordiperros (manual):</label>
+                                    <input type="number" id="gordiperro-count" min="0" value="0">
 
-                        <label for="gordiperro-card-height">Alto de carta (px):</label>
-                        <input type="number" id="gordiperro-card-height" min="10" value="100">
+                                    <label for="gordiperro-min-offset">Dispersion vertical mínima (px):</label>
+                                    <input type="number" id="gordiperro-min-offset" min="0" value="14">
 
-                        <label for="gordiperro-max-columns">Columnas máximas por lateral:</label>
-                        <input type="number" id="gordiperro-max-columns" min="1" value="5">
+                                    <label for="gordiperro-max-offset">Dispersion vertical máxima (px):</label>
+                                    <input type="number" id="gordiperro-max-offset" min="0" value="26">
 
-                        <h3>Configuración de Sonido</h3>
-                        <label for="sound-current-pitch">Pitch inicial (barf):</label>
-                        <input type="number" id="sound-current-pitch" step="0.01" value="1.00">
+                                    <label for="gordiperro-card-width">Ancho de carta (px):</label>
+                                    <input type="number" id="gordiperro-card-width" min="10" value="80">
 
-                        <label for="sound-pitch-increment">Incremento de pitch (por reproducción):</label>
-                        <input type="number" id="sound-pitch-increment" step="0.001" value="0.02">
+                                    <label for="gordiperro-card-height">Alto de carta (px):</label>
+                                    <input type="number" id="gordiperro-card-height" min="10" value="100">
 
-                        <label for="alert-music-volume">Volumen música alerta (0.0 - 1.0):</label>
-                        <input type="number" id="alert-music-volume" step="0.01" min="0" max="1" value="0.5">
+                                    <label for="gordiperro-max-columns">Columnas máximas por lateral:</label>
+                                    <input type="number" id="gordiperro-max-columns" min="1" value="5">
+                                </div>
 
-                        <label for="barf-volume">Volumen barf (0.0 - 1.0):</label>
-                        <input type="number" id="barf-volume" step="0.01" min="0" max="1" value="0.7">
+                                <div id="tab-sound" class="tab" style="display:none;">
+                                    <label for="sound-current-pitch">Pitch inicial (barf):</label>
+                                    <input type="number" id="sound-current-pitch" step="0.01" value="1.00">
 
-                        <div style="margin-top:10px;">
+                                    <label for="sound-pitch-increment">Incremento de pitch (por reproducción):</label>
+                                    <input type="number" id="sound-pitch-increment" step="0.001" value="0.02">
+
+                                    <label for="alert-music-volume">Volumen música alerta (0.0 - 1.0):</label>
+                                    <input type="number" id="alert-music-volume" step="0.01" min="0" max="1" value="0.5">
+
+                                    <label for="barf-volume">Volumen barf (0.0 - 1.0):</label>
+                                    <input type="number" id="barf-volume" step="0.01" min="0" max="1" value="0.7">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:10px;" class="config-buttons">
                             <button id="btn-save">Guardar Configuración</button>
                             <button id="btn-test-alert">Probar alerta</button>
                             <button id="btn-reset">Resetear sistema</button>
                             <button id="btn-close">Cerrar</button>
                         </div>
-                        
+
                         <div class="info">
                             <p><strong>Instrucciones:</strong></p>
                             <p>1. Presiona Shift+C para mostrar/ocultar este panel</p>
@@ -168,6 +181,20 @@ const configUI = {
         } else {
             console.error('btn-reset no encontrado');
         }
+        // Inicializar comportamiento de pestañas
+        const tabButtons = this.element.querySelectorAll('.tab-btn');
+        const showTab = (id) => {
+            this.element.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+            this.element.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const tab = this.element.querySelector(`#${id}`);
+            if (tab) tab.style.display = 'block';
+            const btn = this.element.querySelector(`.tab-btn[data-tab="${id}"]`);
+            if (btn) btn.classList.add('active');
+            setTimeout(() => this.adjustScale(), 30);
+        };
+
+        tabButtons.forEach(b => b.addEventListener('click', (e) => showTab(b.dataset.tab)));
+        showTab('tab-overlay');
     },
     
     show() {
