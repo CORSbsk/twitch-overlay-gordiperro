@@ -16,9 +16,6 @@ const cardDistributor = {
     stackSpacing: 18,
     // Número máximo de columnas por cada lateral (configurable)
     maxColumnsPerSide: 3,
-    // Punteros para distribución circular cuando se alcanza el máximo
-    nextColumnIndexLeft: 0,
-    nextColumnIndexRight: 0,
     sidePadding: 20,
     sideHeight: 0,
 
@@ -74,22 +71,12 @@ const cardDistributor = {
             return this.createStack(side, stacks.length);
         }
 
-        // Buscar una columna existente con espacio antes de reusar alguna.
-        for (let i = 0; i < stacks.length; i += 1) {
-            if (!this.willOverflow(stacks[i])) {
-                return stacks[i];
-            }
-        }
-
-        // Si ya alcanzamos el máximo y todas las columnas están llenas,
-        // reiniciamos la columna siguiente en la rotación para que vuelva a iniciar desde abajo.
+        // Si ya alcanzamos el máximo, rotamos entre las columnas existentes
+        // para continuar apilando por encima de las columnas previas.
         const pointerKey = side === 'left' ? 'nextColumnIndexLeft' : 'nextColumnIndexRight';
         const idx = this[pointerKey] % this.maxColumnsPerSide;
         this[pointerKey] = (this[pointerKey] + 1) % this.maxColumnsPerSide;
-
-        const stackToReuse = stacks[idx];
-        this.resetStack(stackToReuse);
-        return stackToReuse;
+        return stacks[idx];
     },
 
     willOverflow(stack) {
@@ -157,13 +144,6 @@ const cardDistributor = {
         return card;
     },
 
-    resetStack(stackInfo) {
-        // Devolver la pila al estado inicial para que la próxima carta empiece desde abajo.
-        while (stackInfo.element.firstChild) {
-            stackInfo.element.removeChild(stackInfo.element.firstChild);
-        }
-        stackInfo.cardCount = 0;
-    },
 
     applyConfig() {
         if (typeof config === 'undefined') {
