@@ -71,12 +71,34 @@ const cardDistributor = {
             return this.createStack(side, stacks.length);
         }
 
-        // Si ya alcanzamos el máximo, rotamos entre las columnas existentes
-        // para continuar apilando por encima de las columnas previas.
-        const pointerKey = side === 'left' ? 'nextColumnIndexLeft' : 'nextColumnIndexRight';
-        const idx = this[pointerKey] % this.maxColumnsPerSide;
-        this[pointerKey] = (this[pointerKey] + 1) % this.maxColumnsPerSide;
-        return stacks[idx];
+        // Si llegamos al máximo, usar la columna más baja actual.
+        return this.getLowestStack(stacks);
+    },
+
+    getLowestStack(stacks) {
+        let lowestStack = stacks[0];
+        let lowestHeight = this.estimateStackHeight(lowestStack);
+
+        for (let i = 1; i < stacks.length; i += 1) {
+            const height = this.estimateStackHeight(stacks[i]);
+            if (height < lowestHeight) {
+                lowestHeight = height;
+                lowestStack = stacks[i];
+            }
+        }
+
+        return lowestStack;
+    },
+
+    estimateStackHeight(stack) {
+        const cards = stack.element.children;
+        if (cards.length === 0) {
+            return 0;
+        }
+
+        const lastCard = cards[cards.length - 1];
+        const bottom = parseFloat(lastCard.style.bottom) || 0;
+        return bottom + this.cardHeight;
     },
 
     willOverflow(stack) {
