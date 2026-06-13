@@ -66,8 +66,10 @@ const cardDistributor = {
     },
 
     willOverflow(stack) {
-        const projectedHeight = this.cardHeight + stack.cardCount * this.maxOffset;
-        return projectedHeight + this.sidePadding > this.sideHeight;
+        // Comprobar si incluso usando el offset mínimo no cabe la siguiente carta.
+        // Usamos stack.cardCount + 1 porque queremos saber si la SIGUIENTE carta entraría.
+        const projectedWithMin = this.cardHeight + (stack.cardCount + 1) * this.minOffset;
+        return projectedWithMin + this.sidePadding > this.sideHeight;
     },
 
     createStack(side, index) {
@@ -134,7 +136,11 @@ const cardDistributor = {
 
     appendCardToStack(stack, offset = null) {
         const card = this.createCard();
-        const cardOffset = offset !== null ? offset : this.randomOffset();
+
+        // Si no se pasa offset, calcular el mejor offset posible para que
+        // la pila aproveche el espacio restante (dentro de min/max).
+        const cardOffset = offset !== null ? offset : this.calculateBestOffset(stack);
+
         card.style.bottom = `${stack.cardCount * cardOffset}px`;
         card.style.left = `${Math.random() * 16 - 8}px`;
         card.style.zIndex = 100 + stack.cardCount;
@@ -152,13 +158,24 @@ const cardDistributor = {
         return this.minOffset + Math.floor(Math.random() * (this.maxOffset - this.minOffset + 1));
     },
 
+    // Calcula el mejor offset posible para la siguiente carta en la pila
+    // intentando distribuir las cartas en el espacio disponible.
+    calculateBestOffset(stack) {
+        const remainingSpace = this.sideHeight - this.sidePadding - this.cardHeight;
+        const requiredCards = stack.cardCount + 1; // incluimos la siguiente carta
+        const idealOffset = remainingSpace / requiredCards;
+
+        // Clamp al rango [minOffset, maxOffset]
+        return Math.max(this.minOffset, Math.min(this.maxOffset, idealOffset));
+    },
+
     addCardAnimated() {
         return new Promise((resolve) => {
             this.updateSideHeight();
             const side = this.getNextSide();
             const sideStacks = side === 'left' ? this.leftStacks : this.rightStacks;
             const stack = this.getActiveStack(side, sideStacks);
-            const cardOffset = this.randomOffset();
+            const cardOffset = this.calculateBestOffset(stack);
 
             const stackRect = stack.element.getBoundingClientRect();
             const destinationLeft = this.calculateDestinationLeft(stackRect);
