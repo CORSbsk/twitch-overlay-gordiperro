@@ -63,6 +63,12 @@ const storage = {
         const currentCount = this.loadCount();
         const newCount = currentCount + 1;
         this.saveCount(newCount);
+        
+        // Sincronizar con config.js
+        if (typeof configUI !== 'undefined' && typeof configUI.updateCount === 'function') {
+            configUI.updateCount(newCount);
+        }
+        
         return newCount;
     },
     

@@ -405,6 +405,15 @@ const configUI = {
                     console.error('Error al cargar configuración:', e);
                 }
             }
+            
+            // Priorizar el contador de storage.js sobre el de config
+            if (typeof storage !== 'undefined' && typeof storage.loadCount === 'function') {
+                const storageCount = storage.loadCount();
+                if (storageCount > 0) {
+                    config.gordiperroCount = storageCount;
+                    console.log('Contador de storage.js tiene prioridad:', storageCount);
+                }
+            }
         }
     },
     
@@ -447,6 +456,10 @@ const configUI = {
         config.gordiperroCount = newCount;
         if (typeof Storage !== 'undefined') {
             localStorage.setItem('twitchOverlayConfig', JSON.stringify(config));
+        }
+        // También actualizar en storage.js para mantener sincronización
+        if (typeof storage !== 'undefined' && typeof storage.setCount === 'function') {
+            storage.setCount(newCount);
         }
     }
 };
