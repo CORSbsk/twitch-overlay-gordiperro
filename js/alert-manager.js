@@ -8,6 +8,9 @@ const alertManager = {
     async init() {
         console.log('AlertManager inicializado');
         
+        // Cargar configuración primero (después de que storage.js esté cargado)
+        configUI.loadConfig();
+        
         // Inicializar todos los módulos
         configUI.init();
         cardDistributor.init();

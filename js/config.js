@@ -396,11 +396,14 @@ const configUI = {
     loadConfig() {
         if (typeof Storage !== 'undefined') {
             const saved = localStorage.getItem('twitchOverlayConfig');
+            console.log('Valor en twitchOverlayConfig:', saved);
+            
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
+                    console.log('Configuración parseada:', parsed);
                     config = { ...config, ...parsed };
-                    console.log('Configuración cargada:', config);
+                    console.log('Configuración cargada (antes de priorizar storage):', config);
                 } catch (e) {
                     console.error('Error al cargar configuración:', e);
                 }
@@ -409,10 +412,12 @@ const configUI = {
             // Priorizar el contador de storage.js sobre el de config
             if (typeof storage !== 'undefined' && typeof storage.loadCount === 'function') {
                 const storageCount = storage.loadCount();
-                if (storageCount > 0) {
-                    config.gordiperroCount = storageCount;
-                    console.log('Contador de storage.js tiene prioridad:', storageCount);
-                }
+                console.log('Contador de storage.js:', storageCount);
+                console.log('Contador de config antes de priorizar:', config.gordiperroCount);
+                
+                // Siempre usar el valor de storage.js, incluso si es 0
+                config.gordiperroCount = storageCount;
+                console.log('Contador de storage.js tiene prioridad, nuevo valor:', config.gordiperroCount);
             }
         }
     },
@@ -463,9 +468,6 @@ const configUI = {
         }
     }
 };
-
-// Inicializar configuración
-configUI.loadConfig();
 
 // Exportar para uso en otros módulos
 if (typeof module !== 'undefined' && module.exports) {
