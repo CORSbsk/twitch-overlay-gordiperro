@@ -18,6 +18,7 @@ const cardDistributor = {
     maxColumnsPerSide: 3,
     sidePadding: 20,
     sideHeight: 0,
+    columnDisplay: 'both', // 'both', 'left', 'right', 'none'
 
     // Inicializar
     init() {
@@ -42,8 +43,14 @@ const cardDistributor = {
         this.clearSides();
         this.updateSideHeight();
 
+        // Si columnDisplay es 'none', no distribuir ninguna carta
+        if (this.columnDisplay === 'none') {
+            console.log('ColumnDisplay es none, no se distribuyen cartas');
+            return;
+        }
+
         for (let i = 0; i < count; i++) {
-            const side = i % 2 === 0 ? 'left' : 'right';
+            const side = this.getNextSide();
             this.addCardToSide(side);
         }
     },
@@ -155,6 +162,7 @@ const cardDistributor = {
         this.minOffset = Math.max(0, Math.min(config.gordiperroMinOffset || this.minOffset, config.gordiperroMaxOffset || this.maxOffset));
         this.maxOffset = Math.max(this.minOffset, config.gordiperroMaxOffset || this.maxOffset);
         this.maxColumnsPerSide = Math.max(1, config.gordiperroMaxColumnsPerSide || this.maxColumnsPerSide);
+        this.columnDisplay = config.columnDisplay || 'both';
 
         // Ajustar el ancho de las pilas existentes si ya existieran
         [...this.leftStacks, ...this.rightStacks].forEach((stackInfo) => {
@@ -255,6 +263,14 @@ const cardDistributor = {
     },
 
     getNextSide() {
+        // Si columnDisplay especifica un solo lado, usar ese lado
+        if (this.columnDisplay === 'left') {
+            return 'left';
+        }
+        if (this.columnDisplay === 'right') {
+            return 'right';
+        }
+        // Si es 'both', alternar entre izquierda y derecha
         return this.getTotalCards() % 2 === 0 ? 'left' : 'right';
     },
 

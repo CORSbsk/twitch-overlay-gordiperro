@@ -12,6 +12,7 @@ const defaultConfig = {
 };
 // Añadir valores por defecto para columnas y sonido
 defaultConfig.gordiperroMaxColumnsPerSide = 5;
+defaultConfig.columnDisplay = 'both'; // 'both', 'left', 'right', 'none'
 defaultConfig.soundCurrentPitch = 1.0;
 defaultConfig.soundPitchIncrement = 0.02;
 defaultConfig.alertMusicVolume = 0.5;
@@ -87,6 +88,14 @@ const configUI = {
 
                                     <label for="gordiperro-max-columns">Columnas máximas por lateral:</label>
                                     <input type="number" id="gordiperro-max-columns" min="1" value="5">
+
+                                    <label for="column-display">Mostrar columnas:</label>
+                                    <select id="column-display">
+                                        <option value="both">Ambas columnas</option>
+                                        <option value="left">Solo izquierda</option>
+                                        <option value="right">Solo derecha</option>
+                                        <option value="none">Ninguna</option>
+                                    </select>
                                 </div>
 
                                 <div id="tab-sound" class="tab" style="display:none;">
@@ -222,6 +231,7 @@ const configUI = {
             const cardWidthInput = document.getElementById('gordiperro-card-width');
             const cardHeightInput = document.getElementById('gordiperro-card-height');
             const maxColumnsInput = document.getElementById('gordiperro-max-columns');
+            const columnDisplayInput = document.getElementById('column-display');
             const soundPitchInput = document.getElementById('sound-current-pitch');
             const soundPitchIncInput = document.getElementById('sound-pitch-increment');
             const alertMusicVolInput = document.getElementById('alert-music-volume');
@@ -269,6 +279,12 @@ const configUI = {
                 maxColumnsInput.value = config.gordiperroMaxColumnsPerSide || 5;
             } else {
                 console.error('Elemento gordiperro-max-columns no encontrado');
+            }
+
+            if (columnDisplayInput) {
+                columnDisplayInput.value = config.columnDisplay || 'both';
+            } else {
+                console.error('Elemento column-display no encontrado');
             }
 
             if (soundPitchInput) {
@@ -361,6 +377,7 @@ const configUI = {
         const barfVolVal = parseFloat(document.getElementById('barf-volume').value);
 
         config.gordiperroMaxColumnsPerSide = Math.max(1, maxColumnsInputVal);
+        config.columnDisplay = document.getElementById('column-display').value || 'both';
         config.soundCurrentPitch = isNaN(soundPitchVal) ? 1.0 : soundPitchVal;
         config.soundPitchIncrement = isNaN(soundPitchIncVal) ? 0.02 : soundPitchIncVal;
         config.alertMusicVolume = isNaN(alertMusicVolVal) ? 0.5 : Math.min(Math.max(alertMusicVolVal, 0), 1);
