@@ -56,9 +56,6 @@ const animationController = {
             centralAlert.style.opacity = '';
 
             const centralImage = document.getElementById('central-image');
-            const multiplierDuration = 5000;
-            const updateInterval = 50;
-            const soundInterval = 250;
             if (centralImage) {
                 centralImage.style.animation = '';
             }
@@ -128,6 +125,9 @@ const animationController = {
         return new Promise((resolve) => {
             const multiplier = document.getElementById('multiplier');
             const centralImage = document.getElementById('central-image');
+            const multiplierDuration = 5000;
+            const updateInterval = 50;
+            const soundInterval = 250;
             
             // Reiniciar pitch del sonido barf
             soundManager.resetPitch();
