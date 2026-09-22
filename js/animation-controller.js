@@ -56,6 +56,9 @@ const animationController = {
             centralAlert.style.opacity = '';
 
             const centralImage = document.getElementById('central-image');
+            const multiplierDuration = 5000;
+            const updateInterval = 50;
+            const soundInterval = 250;
             if (centralImage) {
                 centralImage.style.animation = '';
             }
@@ -137,33 +140,35 @@ const animationController = {
             let currentCount = 1;
             const targetCount = gordiperroCount;
             
-            // Velocidad más rápida: base de 50ms, disminuye con más count
-            const incrementDelay = Math.max(30, 100 - (targetCount * 0.5));
-            
+            const startTime = performance.now();
+            let lastSoundTime = startTime - soundInterval;
             const incrementInterval = setInterval(() => {
-                if (currentCount <= targetCount) {
-                    // Actualizar multiplicador
+                const elapsed = performance.now() - startTime;
+                const progress = Math.min(elapsed / multiplierDuration, 1);
+                const nextCount = Math.max(1, Math.floor(progress * targetCount));
+
+                if (nextCount !== currentCount || progress >= 1) {
+                    currentCount = Math.min(nextCount, targetCount);
                     multiplier.textContent = `x${currentCount}`;
-                    
-                    // Reproducir sonido barf con pitch incrementado
-                    soundManager.playBarfWithIncrement();
-                    
-                    // Efecto visual errático en la imagen
+
+                    // Mantener el efecto sonoro perceptible sin reproducirlo cientos de veces.
+                    if (elapsed - lastSoundTime >= soundInterval || progress >= 1) {
+                        soundManager.playBarfWithIncrement();
+                        lastSoundTime = elapsed;
+                    }
+
                     centralImage.classList.add('balatro-shake');
                     setTimeout(() => {
                         centralImage.classList.remove('balatro-shake');
                     }, 50);
-                    
-                    currentCount++;
-                } else {
-                    clearInterval(incrementInterval);
-                    
-                    // Esperar un momento antes de continuar
-                    setTimeout(() => {
-                        resolve();
-                    }, 300);
                 }
-            }, incrementDelay);
+
+                if (progress >= 1) {
+                    clearInterval(incrementInterval);
+                    multiplier.textContent = `x${targetCount}`;
+                    resolve();
+                }
+            }, updateInterval);
         });
     },
     
