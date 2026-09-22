@@ -137,8 +137,8 @@ const animationController = {
             multiplier.textContent = 'x1';
             
             // Animación del multiplicador incrementando
-            let currentCount = 1;
-            const targetCount = gordiperroCount;
+            let currentCount = 0;
+            const targetCount = Math.max(1, Number.parseInt(gordiperroCount, 10) || 1);
             
             const startTime = performance.now();
             let lastSoundTime = startTime - soundInterval;
@@ -153,14 +153,20 @@ const animationController = {
 
                     // Mantener el efecto sonoro perceptible sin reproducirlo cientos de veces.
                     if (elapsed - lastSoundTime >= soundInterval || progress >= 1) {
-                        soundManager.playBarfWithIncrement();
+                        try {
+                            soundManager.playBarfWithIncrement();
+                        } catch (error) {
+                            console.warn('No se pudo reproducir el sonido del multiplicador:', error);
+                        }
                         lastSoundTime = elapsed;
                     }
 
-                    centralImage.classList.add('balatro-shake');
-                    setTimeout(() => {
-                        centralImage.classList.remove('balatro-shake');
-                    }, 50);
+                    if (centralImage) {
+                        centralImage.classList.add('balatro-shake');
+                        setTimeout(() => {
+                            centralImage.classList.remove('balatro-shake');
+                        }, 50);
+                    }
                 }
 
                 if (progress >= 1) {
