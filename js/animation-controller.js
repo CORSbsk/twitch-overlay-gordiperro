@@ -25,13 +25,10 @@ const animationController = {
             // Paso 1: Reproducir música de alerta y animación de entrada (5 segundos)
             await this.playEntryAnimation();
             
-            // Paso 2: Rotación 3D errática en centro (1 segundo)
-            await this.play3DRotation();
-            
-            // Paso 3: Multiplicador dinámico con sonido barf
+            // Paso 2: Multiplicador dinámico con sonido barf
             await this.playMultiplierAnimation(gordiperroCount);
             
-            // Paso 4: Distribuir cartas a laterales
+            // Paso 3: Distribuir cartas a laterales
             await this.distributeCards(gordiperroCount);
             
             console.log('Secuencia de animación completada');
@@ -89,42 +86,10 @@ const animationController = {
         });
     },
     
-    // Rotación 3D errática tipo Balatro (1 segundo)
-    async play3DRotation() {
-        return new Promise((resolve) => {
-            const centralImage = document.getElementById('central-image');
-            const alertText = document.getElementById('alert-text');
-            
-            // Mostrar elementos
-            centralImage.style.display = 'block';
-            alertText.style.display = 'block';
-            alertText.textContent = 'Gordiperro canjeado';
-            
-            // Aplicar animación de rotación 3D
-            centralImage.style.animation = 'rotate3D 1s ease-in-out infinite';
-            
-            // Efecto errático tipo Balatro
-            let shakeInterval = setInterval(() => {
-                centralImage.classList.add('balatro-shake');
-                setTimeout(() => {
-                    centralImage.classList.remove('balatro-shake');
-                }, 100);
-            }, 200);
-            
-            // Esperar 1 segundo
-            setTimeout(() => {
-                clearInterval(shakeInterval);
-                centralImage.style.animation = 'none';
-                resolve();
-            }, 1000);
-        });
-    },
-    
     // Animación del multiplicador dinámico
     async playMultiplierAnimation(gordiperroCount) {
         return new Promise((resolve) => {
             const multiplier = document.getElementById('multiplier');
-            const centralImage = document.getElementById('central-image');
             const multiplierDuration = 5000;
             const updateInterval = 50;
             const soundInterval = 250;
@@ -159,13 +124,6 @@ const animationController = {
                             console.warn('No se pudo reproducir el sonido del multiplicador:', error);
                         }
                         lastSoundTime = elapsed;
-                    }
-
-                    if (centralImage) {
-                        centralImage.classList.add('balatro-shake');
-                        setTimeout(() => {
-                            centralImage.classList.remove('balatro-shake');
-                        }, 50);
                     }
                 }
 
